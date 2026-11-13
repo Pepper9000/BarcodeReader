@@ -1,0 +1,1 @@
+"""BarcodeReader application package."""

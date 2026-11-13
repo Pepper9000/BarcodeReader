@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Reader — LDAM Project Foundation</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="title-group">
+          <h1>Barcode Reader</h1>
+          <p class="subtitle">Logic Design and Microprocessor (LDAM) — Phase 3: Live Mobile Camera Scanning</p>
+        </div>
+        <div class="header-badges">
+          <span class="badge badge-system" id="system-status">
+            <span class="status-dot"></span> System Ready
+          </span>
+          <span class="badge badge-mode">Phase 3: Live Camera</span>
+          <a href="/api/labels/pdf" target="_blank" class="badge badge-pdf" download="demo_labels_a4.pdf" title="Download printable A4 labels sheet">
+            📄 Print Labels (A4 PDF)
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Scanner & Product Card -->
+      <section class="scan-section">
+        <!-- Input Terminal Card with Mode Tabs -->
+        <div class="card scanner-card">
+          <div class="card-header">
+            <h2>Barcode Input Terminal</h2>
+            <div class="mode-tabs" role="tablist">
+              <button type="button" class="tab-btn active" id="tab-manual-btn" role="tab" aria-selected="true">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 5v14M6 5v14M11 5v14M14 5v14M17 5v14M21 5v14M8 5v14M19 5v14" />
+                </svg>
+                <span>Manual / USB</span>
+              </button>
+              <button type="button" class="tab-btn" id="tab-image-btn" role="tab" aria-selected="false">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Upload Image</span>
+              </button>
+              <button type="button" class="tab-btn" id="tab-camera-btn" role="tab" aria-selected="false">
+                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Live Camera</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- PANEL 1: Manual / USB Scanner Input -->
+          <div id="panel-manual" class="tab-panel active">
+            <form id="scan-form" class="scan-form" onsubmit="return false;">
+              <div class="input-wrapper">
+                <svg class="barcode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 5v14M6 5v14M11 5v14M14 5v14M17 5v14M21 5v14M8 5v14M19 5v14" />
+                </svg>
+                <input
+                  type="text"
+                  id="barcode-input"
+                  name="barcode"
+                  class="barcode-input"
+                  placeholder="Scan barcode or enter code (e.g. BR000001)..."
+                  autocomplete="off"
+                  autofocus
+                />
+                <button type="submit" id="scan-btn" class="btn btn-primary">
+                  <span>Scan</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Demo Barcode Hints -->
+            <div class="demo-hints">
+              <span class="demo-hints-label">Quick Demo Barcodes:</span>
+              <div class="demo-chips">
+                <button type="button" class="chip" data-barcode="BR000001">BR000001 (Casual)</button>
+                <button type="button" class="chip" data-barcode="BR000003">BR000003 (Party)</button>
+                <button type="button" class="chip" data-barcode="BR000005">BR000005 (Kurti)</button>
+                <button type="button" class="chip" data-barcode="BR000007">BR000007 (Cat 4)</button>
+                <button type="button" class="chip" data-barcode="BR000009">BR000009 (Abaya)</button>
+                <button type="button" class="chip" data-barcode="BR000011">BR000011 (Rental)</button>
+                <button type="button" class="chip" data-barcode="BR000013">BR000013 (Material)</button>
+                <button type="button" class="chip" data-barcode="BR000015">BR000015 (Ready)</button>
+                <button type="button" class="chip chip-invalid" data-barcode="BR999999">BR999999 (Unknown)</button>
+              </div>
+            </div>
+            <div class="scanner-subtext">USB HID keyboard-wedge emulation &bull; Automatic focus &bull; Press Enter to scan</div>
+          </div>
+
+          <!-- PANEL 2: Image-Based Barcode Upload -->
+          <div id="panel-image" class="tab-panel hidden">
+            <!-- Dropzone / File Picker Area -->
+            <div class="drop-zone" id="drop-zone">
+              <input
+                type="file"
+                id="image-file-input"
+                class="file-input-hidden"
+                accept="image/jpeg,image/png,image/webp"
+              />
+              <div class="drop-zone-prompt" id="drop-zone-prompt">
+                <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <div class="drop-zone-title">Click to browse or drop barcode image here</div>
+                <div class="drop-zone-subtitle">Select from Phone Gallery or Files &bull; JPG, JPEG, PNG, WEBP</div>
+              </div>
+
+              <!-- Image Preview Container -->
+              <div class="preview-wrapper hidden" id="preview-wrapper">
+                <img id="image-preview" class="image-preview" alt="Barcode preview" />
+                <div class="preview-meta">
+                  <span class="preview-filename" id="preview-filename">—</span>
+                  <span class="preview-details" id="preview-details">—</span>
+                  <button type="button" id="remove-image-btn" class="btn btn-secondary btn-sm">Remove Image</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Scan Action Bar -->
+            <div class="image-actions">
+              <button type="button" id="scan-image-btn" class="btn btn-primary btn-block" disabled>
+                <span id="scan-image-btn-text">Scan Image for Barcode</span>
+                <span id="scan-image-spinner" class="spinner hidden"></span>
+              </button>
+            </div>
+
+            <!-- Multi-Barcode Selection Modal / Card -->
+            <div id="multi-barcode-card" class="multi-barcode-card hidden">
+              <div class="multi-barcode-header">
+                <span class="multi-barcode-icon">⚠️</span>
+                <div>
+                  <strong>Multiple Barcodes Detected</strong>
+                  <p class="multi-barcode-desc">Select which barcode to identify:</p>
+                </div>
+              </div>
+              <div class="multi-barcode-options" id="multi-barcode-options"></div>
+            </div>
+
+            <!-- Sample Demo Images for Quick Testing -->
+            <div class="demo-hints">
+              <span class="demo-hints-label">Try Sample Barcode Images:</span>
+              <div class="demo-chips">
+                <button type="button" class="chip chip-sample" data-sample="valid_demo_br01.png">Demo: BR000001 (Casual)</button>
+                <button type="button" class="chip chip-sample" data-sample="valid_demo_br05.png">Demo: BR000005 (Kurti)</button>
+                <button type="button" class="chip chip-sample" data-sample="valid_demo_br09.png">Demo: BR000009 (Abaya)</button>
+                <button type="button" class="chip chip-sample" data-sample="multi_barcodes.png">Sample: Multi-Barcode</button>
+                <button type="button" class="chip chip-sample chip-invalid" data-sample="no_barcode_blank.png">Sample: No Barcode</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 3: Live Mobile Camera Scanner -->
+          <div id="panel-camera" class="tab-panel hidden">
+            <!-- Camera Controls Toolbar -->
+            <div class="camera-toolbar">
+              <div class="camera-toolbar-left">
+                <button type="button" id="camera-start-btn" class="btn btn-primary">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                  <span id="camera-start-btn-text">Start Camera</span>
+                </button>
+                <button type="button" id="camera-stop-btn" class="btn btn-secondary hidden">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="6" width="12" height="12"/>
+                  </svg>
+                  <span>Stop Camera</span>
+                </button>
+              </div>
+              <div class="camera-toolbar-right">
+                <select id="camera-device-select" class="camera-select hidden" aria-label="Select Camera Device">
+                  <option value="">Rear Camera (Default)</option>
+                </select>
+                <button type="button" id="camera-torch-btn" class="btn btn-secondary btn-icon-only hidden" title="Toggle Flashlight">
+                  💡
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Viewfinder / Video Container -->
+            <div class="viewfinder-container" id="camera-viewfinder-container">
+              <!-- Inactive Placeholder -->
+              <div class="viewfinder-placeholder" id="camera-placeholder">
+                <div class="placeholder-graphic">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <div class="placeholder-title">Live Mobile Camera Scanner</div>
+                <div class="placeholder-subtitle">
+                  Press <strong>Start Camera</strong> to begin real-time barcode scanning.
+                </div>
+                <div class="placeholder-hint">
+                  Camera permission is requested only after pressing Start Camera.
+                </div>
+              </div>
+
+              <!-- Active Video Frame -->
+              <div class="viewfinder-active hidden" id="camera-active-view">
+                <video id="camera-video" playsinline muted autoplay></video>
+                <!-- Reticle and Target Overlay -->
+                <div class="viewfinder-overlay">
+                  <div class="viewfinder-frame" id="viewfinder-frame">
+                    <span class="corner corner-tl"></span>
+                    <span class="corner corner-tr"></span>
+                    <span class="corner corner-bl"></span>
+                    <span class="corner corner-br"></span>
+                    <div class="viewfinder-laser" id="viewfinder-laser"></div>
+                  </div>
+                  <div class="viewfinder-tip" id="viewfinder-tip">Align barcode within the target frame</div>
+                  <div class="viewfinder-status" id="camera-status-chip">
+                    <span class="status-pulse"></span>
+                    <span id="camera-status-text">Scanning...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Post-Scan Controls (Appears on successful detection) -->
+            <div id="camera-scan-success-bar" class="camera-success-bar hidden">
+              <div class="success-message">
+                <span class="success-icon">✓</span>
+                <span>Barcode detected! Paused to avoid duplicate scans.</span>
+              </div>
+              <div class="success-actions">
+                <button type="button" id="camera-resume-btn" class="btn btn-primary btn-sm">
+                  Scan Another Barcode
+                </button>
+              </div>
+            </div>
+
+            <!-- Security & HTTPS Information Callout -->
+            <div class="camera-info-banner">
+              <div class="info-banner-icon">🔒</div>
+              <div class="info-banner-text">
+                <strong>Mobile Security Notice:</strong> Modern mobile browsers require HTTPS for camera streaming outside <code>localhost</code>. If accessing from a phone over local Wi-Fi, you can also use the <a href="#" id="link-switch-upload">Upload Image</a> tab to take photos using your mobile camera without HTTPS restrictions.
+              </div>
+            </div>
+
+            <!-- Fallback Notice -->
+            <div class="camera-fallback-card hidden" id="camera-fallback-card">
+              <div class="fallback-icon">⚠️</div>
+              <div class="fallback-content">
+                <strong id="camera-fallback-title">Camera Unavailable</strong>
+                <p id="camera-fallback-message">Camera access could not be initialized.</p>
+                <div class="fallback-links">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-fallback-manual">Use Manual Input</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-fallback-upload">Use Image Upload</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="status-alert" class="alert alert-idle" role="alert">
+          <div class="alert-icon" id="alert-icon">ℹ️</div>
+          <div class="alert-content">
+            <div class="alert-title" id="alert-title">Ready for Scanning</div>
+            <div class="alert-message" id="alert-message">
+              Scan with USB scanner, enter code, upload an image, or use the live camera.
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Identification Display -->
+        <div class="card product-card" id="product-card">
+          <div class="card-header">
+            <h2>Product Identification &amp; Category</h2>
+            <span class="badge" id="product-status-badge">Awaiting Scan</span>
+          </div>
+
+          <div class="product-body" id="product-body">
+            <div class="product-placeholder" id="product-placeholder">
+              <p>No product scanned yet. Scan or upload an image to view product details and category classification.</p>
+            </div>
+
+            <div class="product-details hidden" id="product-details">
+              <div class="product-main">
+                <div class="product-name" id="product-name">—</div>
+                <div class="product-category-box">
+                  <span class="category-tag-label">Identified Category:</span>
+                  <div class="category-tag" id="product-category-name">—</div>
+                </div>
+              </div>
+
+              <div class="product-meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Barcode</span>
+                  <span class="meta-value" id="product-barcode">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Product ID</span>
+                  <span class="meta-value" id="product-id">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Category ID</span>
+                  <span class="meta-value" id="product-category-id">—</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Category Code</span>
+                  <span class="meta-value" id="product-category-code">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Category Summary & Recent Scans -->
+      <aside class="sidebar-section">
+        <!-- Category Summary -->
+        <div class="card categories-summary-card">
+          <div class="card-header">
+            <h2>Category Catalogue</h2>
+            <span class="badge badge-info" id="total-categories-count">8 Categories</span>
+          </div>
+          <div class="category-list" id="category-summary-list">
+            <div class="loading-spinner">Loading categories...</div>
+          </div>
+        </div>
+
+        <!-- Recent Scan History -->
+        <div class="card history-card">
+          <div class="card-header">
+            <h2>Recent Scan History</h2>
+            <button type="button" id="clear-history-btn" class="btn btn-secondary btn-sm">Clear</button>
+          </div>
+          <div class="history-content">
+            <div class="history-empty" id="history-empty">No scan events recorded this session.</div>
+            <ul class="history-list hidden" id="history-list"></ul>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <span>LDAM Academic Project &bull; Barcode-Based Product Identification and Classification</span>
+        <span class="footer-note">Phase 3: Live Mobile Camera Scanning &bull; ZXing Engine</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Local Vendored ZXing Library for Browser Barcode Decoding -->
+  <script src="/static/vendor/zxing.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Dress — Casual",
+    "code": "DRS-CAS",
+    "description": "Everyday casual dresses and relaxed western wear"
+  },
+  {
+    "id": 2,
+    "name": "Dress — Party Wear",
+    "code": "DRS-PTY",
+    "description": "Formal gowns, cocktail dresses, and festive occasion wear"
+  },
+  {
+    "id": 3,
+    "name": "Kurti — Cotton",
+    "code": "KRT-COT",
+    "description": "Pure cotton kurtis, daily-wear tunics, and ethnic tops"
+  },
+  {
+    "id": 4,
+    "name": "Category 4 — name to be confirmed",
+    "code": "CAT-004",
+    "description": "Reserved category slot (designation to be confirmed)"
+  },
+  {
+    "id": 5,
+    "name": "Abaya",
+    "code": "ABY-STD",
+    "description": "Traditional modest abayas, modern kaftans, and cloaks"
+  },
+  {
+    "id": 6,
+    "name": "Rental — Bridal",
+    "code": "RNT-BRL",
+    "description": "High-end bridal lehengas, sherwanis, and wedding attire for hire"
+  },
+  {
+    "id": 7,
+    "name": "Dress — Dress Material",
+    "code": "DRS-MAT",
+    "description": "Unstitched fabrics, suits, and tailoring materials"
+  },
+  {
+    "id": 8,
+    "name": "Dress — Ready Wear",
+    "code": "DRS-RDY",
+    "description": "Pre-stitched ready-to-wear salwar suits, sets, and co-ords"
+  }
+]

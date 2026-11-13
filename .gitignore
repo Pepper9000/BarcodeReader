@@ -1,0 +1,39 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Pytest and testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS specific
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs and local configurations
+*.log
+.env
+
+# Environment and secrets
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+secrets.json
+
+# Build and distribution artifacts
+build/
+dist/
+*.egg-info/

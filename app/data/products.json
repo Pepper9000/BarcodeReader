@@ -1,0 +1,98 @@
+[
+  {
+    "id": "PROD-001",
+    "barcode": "BR000001",
+    "name": "DEMO: Floral Summer Maxi Dress",
+    "category_id": 1
+  },
+  {
+    "id": "PROD-002",
+    "barcode": "BR000002",
+    "name": "DEMO: Linen A-Line Casual Day Dress",
+    "category_id": 1
+  },
+  {
+    "id": "PROD-003",
+    "barcode": "BR000003",
+    "name": "DEMO: Sequin Evening Cocktail Gown",
+    "category_id": 2
+  },
+  {
+    "id": "PROD-004",
+    "barcode": "BR000004",
+    "name": "DEMO: Velvet Glamour Party Dress",
+    "category_id": 2
+  },
+  {
+    "id": "PROD-005",
+    "barcode": "BR000005",
+    "name": "DEMO: Indigo Block Print Cotton Kurti",
+    "category_id": 3
+  },
+  {
+    "id": "PROD-006",
+    "barcode": "BR000006",
+    "name": "DEMO: Handloom Striped Daily Kurti",
+    "category_id": 3
+  },
+  {
+    "id": "PROD-007",
+    "barcode": "BR000007",
+    "name": "DEMO: Category 4 Prototype Article Alpha",
+    "category_id": 4
+  },
+  {
+    "id": "PROD-008",
+    "barcode": "BR000008",
+    "name": "DEMO: Category 4 Prototype Article Beta",
+    "category_id": 4
+  },
+  {
+    "id": "PROD-009",
+    "barcode": "BR000009",
+    "name": "DEMO: Classic Black Nidha Abaya",
+    "category_id": 5
+  },
+  {
+    "id": "PROD-010",
+    "barcode": "BR000010",
+    "name": "DEMO: Embroidered Front-Open Kaftan Abaya",
+    "category_id": 5
+  },
+  {
+    "id": "PROD-011",
+    "barcode": "BR000011",
+    "name": "DEMO: Crimson Regal Zari Bridal Lehenga (Rental)",
+    "category_id": 6
+  },
+  {
+    "id": "PROD-012",
+    "barcode": "BR000012",
+    "name": "DEMO: Pastel Gold Raw Silk Wedding Sherwani (Rental)",
+    "category_id": 6
+  },
+  {
+    "id": "PROD-013",
+    "barcode": "BR000013",
+    "name": "DEMO: Chanderi Silk 3-Piece Dress Material Set",
+    "category_id": 7
+  },
+  {
+    "id": "PROD-014",
+    "barcode": "BR000014",
+    "name": "DEMO: Pure Cotton Unstitched Salwar Material",
+    "category_id": 7
+  },
+  {
+    "id": "PROD-015",
+    "barcode": "BR000015",
+    "name": "DEMO: Stitched Georgette Anarkali Ready Suit",
+    "category_id": 8
+  },
+  {
+    "id": "PROD-016",
+    "barcode": "BR000016",
+    "name": "DEMO: Ready-to-Wear Straight Embroidered Kurta Set",
+    "category_id": 8
+  }
+]
