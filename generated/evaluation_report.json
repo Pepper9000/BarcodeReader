@@ -1,0 +1,584 @@
+{
+  "timestamp": "2026-11-17T18:22:12.229036+00:00",
+  "total_test_cases": 42,
+  "standard_decoder": {
+    "exact_matches": 24,
+    "exact_recovery_rate": 0.5714,
+    "false_identifications": 0,
+    "false_identification_rate": 0.0,
+    "abstentions": 18,
+    "abstention_rate": 0.4286
+  },
+  "recovery_pipeline": {
+    "exact_matches": 35,
+    "exact_recovery_rate": 0.8333,
+    "false_identifications": 0,
+    "false_identification_rate": 0.0,
+    "abstentions": 7,
+    "abstention_rate": 0.1667
+  },
+  "breakdown_by_damage_type": {
+    "clean": {
+      "standard": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      }
+    },
+    "fading": {
+      "standard": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      }
+    },
+    "scratches": {
+      "standard": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      }
+    },
+    "smudges": {
+      "standard": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      }
+    },
+    "low_contrast": {
+      "standard": {
+        "exact": 0,
+        "false_id": 0,
+        "abstain": 6,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 6,
+        "false_id": 0,
+        "abstain": 0,
+        "total": 6
+      }
+    },
+    "skew": {
+      "standard": {
+        "exact": 0,
+        "false_id": 0,
+        "abstain": 6,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 5,
+        "false_id": 0,
+        "abstain": 1,
+        "total": 6
+      }
+    },
+    "severe_unrecoverable": {
+      "standard": {
+        "exact": 0,
+        "false_id": 0,
+        "abstain": 6,
+        "total": 6
+      },
+      "recovered": {
+        "exact": 0,
+        "false_id": 0,
+        "abstain": 6,
+        "total": 6
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "filename": "synthetic_clean_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "4006381333931",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4006381333931",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "4006381333931",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4006381333931",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "4006381333931",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4006381333931",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "4006381333931",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4006381333931",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "4006381333931",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "4006381333931",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_4006381333931.png",
+      "ground_truth": "4006381333931",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_clean_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "5901234123457",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5901234123457",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "5901234123457",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5901234123457",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "5901234123457",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5901234123457",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "5901234123457",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5901234123457",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "5901234123457",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_5901234123457.png",
+      "ground_truth": "5901234123457",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_clean_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "8001090123459",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "8001090123459",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "8001090123459",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "8001090123459",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "8001090123459",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "8001090123459",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "8001090123459",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "8001090123459",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "8001090123459",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "8001090123459",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_8001090123459.png",
+      "ground_truth": "8001090123459",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_clean_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "4901234567894",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4901234567894",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "4901234567894",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4901234567894",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "4901234567894",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4901234567894",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "4901234567894",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "4901234567894",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "4901234567894",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "4901234567894",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_4901234567894.png",
+      "ground_truth": "4901234567894",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_clean_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "7312345678909",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "7312345678909",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "7312345678909",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "7312345678909",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "7312345678909",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "7312345678909",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "7312345678909",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "7312345678909",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "7312345678909",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "7312345678909",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_7312345678909.png",
+      "ground_truth": "7312345678909",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    },
+    {
+      "filename": "synthetic_clean_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "clean",
+      "synthetic": true,
+      "standard_result": "5012345678900",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5012345678900",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_fading_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "fading",
+      "synthetic": true,
+      "standard_result": "5012345678900",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5012345678900",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_scratches_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "scratches",
+      "synthetic": true,
+      "standard_result": "5012345678900",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5012345678900",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_smudges_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "smudges",
+      "synthetic": true,
+      "standard_result": "5012345678900",
+      "standard_outcome": "EXACT_MATCH",
+      "recovery_result": "5012345678900",
+      "recovery_status": "decoded_normally",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_low_contrast_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "low_contrast",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "5012345678900",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_skew_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "skew",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": "5012345678900",
+      "recovery_status": "recovered_from_damaged_image",
+      "recovery_outcome": "EXACT_MATCH"
+    },
+    {
+      "filename": "synthetic_severe_unrecoverable_5012345678900.png",
+      "ground_truth": "5012345678900",
+      "damage_type": "severe_unrecoverable",
+      "synthetic": true,
+      "standard_result": null,
+      "standard_outcome": "ABSTAIN",
+      "recovery_result": null,
+      "recovery_status": "abstained",
+      "recovery_outcome": "ABSTAIN"
+    }
+  ]
+}

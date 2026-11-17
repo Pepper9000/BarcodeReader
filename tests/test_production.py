@@ -82,3 +82,23 @@ def test_pdf_endpoint_regenerates_if_missing():
     assert res.status_code == 200
     assert res.headers.get("content-type") == "application/pdf"
     assert int(res.headers.get("content-length", 0)) > 1000
+
+
+def test_favicon_endpoints_accessible():
+    """Verify that /favicon.ico and static favicon assets are served correctly."""
+    # Root favicon
+    root_fav = client.get("/favicon.ico")
+    assert root_fav.status_code == 200
+    assert "image" in root_fav.headers.get("content-type", "").lower()
+    assert len(root_fav.content) > 500
+
+    # Static PNG favicon
+    png_fav = client.get("/static/favicon-32x32.png")
+    assert png_fav.status_code == 200
+    assert "image/png" in png_fav.headers.get("content-type", "").lower()
+    assert len(png_fav.content) > 500
+
+    # HTML contains link tags for favicons
+    html_res = client.get("/")
+    assert html_res.status_code == 200
+    assert 'rel="icon"' in html_res.text

@@ -1,0 +1,380 @@
+[
+  {
+    "filename": "synthetic_clean_4006381333931.png",
+    "relative_path": "images/synthetic_clean_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_4006381333931.png",
+    "relative_path": "images/synthetic_fading_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_4006381333931.png",
+    "relative_path": "images/synthetic_scratches_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_4006381333931.png",
+    "relative_path": "images/synthetic_smudges_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_4006381333931.png",
+    "relative_path": "images/synthetic_low_contrast_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_4006381333931.png",
+    "relative_path": "images/synthetic_skew_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_4006381333931.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_4006381333931.png",
+    "ground_truth_code": "4006381333931",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  },
+  {
+    "filename": "synthetic_clean_5901234123457.png",
+    "relative_path": "images/synthetic_clean_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_5901234123457.png",
+    "relative_path": "images/synthetic_fading_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_5901234123457.png",
+    "relative_path": "images/synthetic_scratches_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_5901234123457.png",
+    "relative_path": "images/synthetic_smudges_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_5901234123457.png",
+    "relative_path": "images/synthetic_low_contrast_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_5901234123457.png",
+    "relative_path": "images/synthetic_skew_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_5901234123457.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_5901234123457.png",
+    "ground_truth_code": "5901234123457",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  },
+  {
+    "filename": "synthetic_clean_8001090123459.png",
+    "relative_path": "images/synthetic_clean_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_8001090123459.png",
+    "relative_path": "images/synthetic_fading_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_8001090123459.png",
+    "relative_path": "images/synthetic_scratches_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_8001090123459.png",
+    "relative_path": "images/synthetic_smudges_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_8001090123459.png",
+    "relative_path": "images/synthetic_low_contrast_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_8001090123459.png",
+    "relative_path": "images/synthetic_skew_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_8001090123459.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_8001090123459.png",
+    "ground_truth_code": "8001090123459",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  },
+  {
+    "filename": "synthetic_clean_4901234567894.png",
+    "relative_path": "images/synthetic_clean_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_4901234567894.png",
+    "relative_path": "images/synthetic_fading_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_4901234567894.png",
+    "relative_path": "images/synthetic_scratches_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_4901234567894.png",
+    "relative_path": "images/synthetic_smudges_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_4901234567894.png",
+    "relative_path": "images/synthetic_low_contrast_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_4901234567894.png",
+    "relative_path": "images/synthetic_skew_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_4901234567894.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_4901234567894.png",
+    "ground_truth_code": "4901234567894",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  },
+  {
+    "filename": "synthetic_clean_7312345678909.png",
+    "relative_path": "images/synthetic_clean_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_7312345678909.png",
+    "relative_path": "images/synthetic_fading_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_7312345678909.png",
+    "relative_path": "images/synthetic_scratches_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_7312345678909.png",
+    "relative_path": "images/synthetic_smudges_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_7312345678909.png",
+    "relative_path": "images/synthetic_low_contrast_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_7312345678909.png",
+    "relative_path": "images/synthetic_skew_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_7312345678909.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_7312345678909.png",
+    "ground_truth_code": "7312345678909",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  },
+  {
+    "filename": "synthetic_clean_5012345678900.png",
+    "relative_path": "images/synthetic_clean_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "clean",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Clean baseline control barcode"
+  },
+  {
+    "filename": "synthetic_fading_5012345678900.png",
+    "relative_path": "images/synthetic_fading_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "fading",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic fading: bars attenuated to light gray"
+  },
+  {
+    "filename": "synthetic_scratches_5012345678900.png",
+    "relative_path": "images/synthetic_scratches_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "scratches",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic scratches: white horizontal cuts across scanlines"
+  },
+  {
+    "filename": "synthetic_smudges_5012345678900.png",
+    "relative_path": "images/synthetic_smudges_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "smudges",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic smudges: dark ink blotch covering center region"
+  },
+  {
+    "filename": "synthetic_low_contrast_5012345678900.png",
+    "relative_path": "images/synthetic_low_contrast_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "low_contrast",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic low contrast: narrow 15-level dynamic range"
+  },
+  {
+    "filename": "synthetic_skew_5012345678900.png",
+    "relative_path": "images/synthetic_skew_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "skew",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic skew: 25-degree rotation"
+  },
+  {
+    "filename": "synthetic_severe_unrecoverable_5012345678900.png",
+    "relative_path": "images/synthetic_severe_unrecoverable_5012345678900.png",
+    "ground_truth_code": "5012345678900",
+    "damage_type": "severe_unrecoverable",
+    "synthetic": true,
+    "provenance": "Controlled synthetic degradation",
+    "description": "Synthetic unrecoverable noise control"
+  }
+]

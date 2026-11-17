@@ -3,319 +3,375 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barcode Reader — LDAM Project Foundation</title>
+  <title>Barcode Reader — Product Identification &amp; Safe EAN-13 Recovery</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
+  <div class="app-layout">
+    <!-- Top Application Header -->
     <header class="app-header">
-      <div class="header-content">
-        <div class="title-group">
-          <h1>Barcode Reader</h1>
-          <p class="subtitle">Logic Design and Microprocessor (LDAM) — Phase 3: Live Mobile Camera Scanning</p>
+      <div class="header-container">
+        <div class="brand-group">
+          <img src="/static/favicon-32x32.png" alt="Barcode Reader Logo" class="brand-logo" width="32" height="32" />
+          <div class="brand-text">
+            <h1 class="brand-title">Barcode Reader</h1>
+            <p class="brand-subtitle">Simple product lookup, catalogue browsing &amp; safe barcode recovery</p>
+          </div>
         </div>
-        <div class="header-badges">
-          <span class="badge badge-system" id="system-status">
-            <span class="status-dot"></span> System Ready
+
+        <div class="header-status">
+          <span class="status-pill status-ready" id="system-status">
+            <span class="status-dot"></span> Ready
           </span>
-          <span class="badge badge-mode">Phase 3: Live Camera</span>
-          <a href="/api/labels/pdf" target="_blank" class="badge badge-pdf" download="demo_labels_a4.pdf" title="Download printable A4 labels sheet">
-            📄 Print Labels (A4 PDF)
-          </a>
         </div>
       </div>
+
+      <!-- Navigation Tabs (One focused section visible at a time) -->
+      <nav class="app-nav" aria-label="Main Navigation">
+        <button type="button" class="nav-tab active" data-section="scan" id="btn-nav-scan">
+          <span class="nav-icon">📷</span>
+          <span class="nav-label">Scan</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="recovery" id="btn-nav-recovery">
+          <span class="nav-icon">🩹</span>
+          <span class="nav-label">Recovery</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="history" id="btn-nav-history">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">History</span>
+          <span class="nav-badge" id="history-count-badge">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="products" id="btn-nav-products">
+          <span class="nav-icon">🏷️</span>
+          <span class="nav-label">Products</span>
+          <span class="nav-badge" id="products-count-badge">16</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="batch" id="btn-open-batch">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">Batch</span>
+          <span class="nav-badge" id="batch-count-badge">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="saved" id="btn-open-saved">
+          <span class="nav-icon">★</span>
+          <span class="nav-label">Saved</span>
+          <span class="nav-badge" id="saved-count-badge">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="compare" id="btn-open-compare">
+          <span class="nav-icon">⚖️</span>
+          <span class="nav-label">Compare</span>
+          <span class="nav-badge" id="compare-count-badge">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="catalog" id="btn-open-catalog">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Overview</span>
+        </button>
+        <button type="button" class="nav-tab" data-section="labels" id="btn-nav-labels">
+          <span class="nav-icon">🖨️</span>
+          <span class="nav-label">Print Labels</span>
+        </button>
+      </nav>
     </header>
 
-    <!-- Main Grid -->
-    <main class="main-grid">
-      <!-- Left Column: Scanner & Product Card -->
-      <section class="scan-section">
-        <!-- Input Terminal Card with Mode Tabs -->
-        <div class="card scanner-card">
-          <div class="card-header">
-            <h2>Barcode Input Terminal</h2>
-            <div class="mode-tabs" role="tablist">
-              <button type="button" class="tab-btn active" id="tab-manual-btn" role="tab" aria-selected="true">
-                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 5v14M6 5v14M11 5v14M14 5v14M17 5v14M21 5v14M8 5v14M19 5v14" />
-                </svg>
-                <span>Manual / USB</span>
+    <!-- Global Alert / Notification Toast -->
+    <div id="status-alert" class="alert alert-idle hidden" role="alert">
+      <div class="alert-icon" id="alert-icon">ℹ️</div>
+      <div class="alert-content">
+        <div class="alert-title" id="alert-title">System Ready</div>
+        <div class="alert-message" id="alert-message">Ready to scan or look up barcodes.</div>
+      </div>
+    </div>
+
+    <!-- Main Content Area: One focused section visible at a time -->
+    <main class="app-main">
+
+      <!-- =================================================================== -->
+      <!-- SECTION 1: SCAN -->
+      <!-- =================================================================== -->
+      <section id="section-scan" class="page-section active">
+        <div class="scan-grid">
+          <!-- Left Column: Scan Mode Inputs -->
+          <div class="scan-input-card card">
+            <div class="card-header">
+              <h2>Scan Barcode</h2>
+              <div class="batch-mode-toggle">
+                <label for="batch-mode-checkbox" class="toggle-label" title="Automatically add scanned codes to temporary batch list">
+                  <input type="checkbox" id="batch-mode-checkbox" />
+                  <span>Batch Mode</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="scan-mode-tabs" role="tablist">
+              <button type="button" class="mode-tab-btn active" id="tab-manual-btn" role="tab" aria-selected="true" aria-controls="panel-manual">
+                <span class="tab-icon">⌨️</span> Manual / USB
               </button>
-              <button type="button" class="tab-btn" id="tab-image-btn" role="tab" aria-selected="false">
-                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-                <span>Upload Image</span>
+              <button type="button" class="mode-tab-btn" id="tab-image-btn" role="tab" aria-selected="false" aria-controls="panel-image">
+                <span class="tab-icon">🖼️</span> Upload Image
               </button>
-              <button type="button" class="tab-btn" id="tab-camera-btn" role="tab" aria-selected="false">
-                <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="4"/>
-                </svg>
-                <span>Live Camera</span>
+              <button type="button" class="mode-tab-btn" id="tab-camera-btn" role="tab" aria-selected="false" aria-controls="panel-camera">
+                <span class="tab-icon">📷</span> Live Camera
               </button>
             </div>
-          </div>
 
-          <!-- PANEL 1: Manual / USB Scanner Input -->
-          <div id="panel-manual" class="tab-panel active">
-            <form id="scan-form" class="scan-form" onsubmit="return false;">
-              <div class="input-wrapper">
-                <svg class="barcode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 5v14M6 5v14M11 5v14M14 5v14M17 5v14M21 5v14M8 5v14M19 5v14" />
-                </svg>
+            <!-- Mode 1: Manual / USB Scanner Terminal -->
+            <div class="mode-panel active" id="panel-manual" role="tabpanel" aria-labelledby="tab-manual-btn">
+              <form id="scan-form" class="scan-form" onsubmit="return false;">
+                <div class="input-with-button">
+                  <span class="input-icon">🔍</span>
+                  <input
+                    type="text"
+                    id="barcode-input"
+                    class="form-input barcode-input-field"
+                    placeholder="Type code or scan with USB scanner..."
+                    autocomplete="off"
+                    autofocus
+                  />
+                  <button type="submit" id="scan-btn" class="btn btn-primary">Look Up</button>
+                </div>
+                <small class="helper-text" id="manual-format-msg">
+                  Supports Code 128 (e.g. BR000001) and EAN-13 (13 digits). Scanner enters automatically.
+                </small>
+              </form>
+
+              <div class="quick-chips-group">
+                <span class="chips-label">Try demo codes:</span>
+                <div class="chips-scroll">
+                  <button type="button" class="chip" data-barcode="BR000001">BR000001 (Casual)</button>
+                  <button type="button" class="chip" data-barcode="BR000005">BR000005 (Kurti)</button>
+                  <button type="button" class="chip" data-barcode="BR000009">BR000009 (Abaya)</button>
+                  <button type="button" class="chip" data-barcode="BR000016">BR000016 (Ready)</button>
+                  <button type="button" class="chip chip-unregistered" data-barcode="9876543210985">9876543210985 (Unknown)</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mode 2: Image Upload Scanner -->
+            <div class="mode-panel hidden" id="panel-image" role="tabpanel" aria-labelledby="tab-image-btn">
+              <div class="drop-zone" id="drop-zone">
                 <input
-                  type="text"
-                  id="barcode-input"
-                  name="barcode"
-                  class="barcode-input"
-                  placeholder="Scan barcode or enter code (e.g. BR000001)..."
-                  autocomplete="off"
-                  autofocus
+                  type="file"
+                  id="image-file-input"
+                  class="file-input-hidden"
+                  accept="image/jpeg,image/png,image/webp"
                 />
-                <button type="submit" id="scan-btn" class="btn btn-primary">
-                  <span>Scan</span>
-                </button>
-              </div>
-            </form>
+                <div class="drop-zone-prompt" id="drop-zone-prompt">
+                  <div class="drop-icon">📁</div>
+                  <p class="drop-text"><strong>Choose an image</strong> or drag and drop here</p>
+                  <p class="drop-subtext">JPG, PNG, or WEBP from gallery or files</p>
+                </div>
 
-            <!-- Demo Barcode Hints -->
-            <div class="demo-hints">
-              <span class="demo-hints-label">Quick Demo Barcodes:</span>
-              <div class="demo-chips">
-                <button type="button" class="chip" data-barcode="BR000001">BR000001 (Casual)</button>
-                <button type="button" class="chip" data-barcode="BR000003">BR000003 (Party)</button>
-                <button type="button" class="chip" data-barcode="BR000005">BR000005 (Kurti)</button>
-                <button type="button" class="chip" data-barcode="BR000007">BR000007 (Cat 4)</button>
-                <button type="button" class="chip" data-barcode="BR000009">BR000009 (Abaya)</button>
-                <button type="button" class="chip" data-barcode="BR000011">BR000011 (Rental)</button>
-                <button type="button" class="chip" data-barcode="BR000013">BR000013 (Material)</button>
-                <button type="button" class="chip" data-barcode="BR000015">BR000015 (Ready)</button>
-                <button type="button" class="chip chip-invalid" data-barcode="BR999999">BR999999 (Unknown)</button>
-              </div>
-            </div>
-            <div class="scanner-subtext">USB HID keyboard-wedge emulation &bull; Automatic focus &bull; Press Enter to scan</div>
-          </div>
-
-          <!-- PANEL 2: Image-Based Barcode Upload -->
-          <div id="panel-image" class="tab-panel hidden">
-            <!-- Dropzone / File Picker Area -->
-            <div class="drop-zone" id="drop-zone">
-              <input
-                type="file"
-                id="image-file-input"
-                class="file-input-hidden"
-                accept="image/jpeg,image/png,image/webp"
-              />
-              <div class="drop-zone-prompt" id="drop-zone-prompt">
-                <svg class="upload-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <div class="drop-zone-title">Click to browse or drop barcode image here</div>
-                <div class="drop-zone-subtitle">Select from Phone Gallery or Files &bull; JPG, JPEG, PNG, WEBP</div>
-              </div>
-
-              <!-- Image Preview Container -->
-              <div class="preview-wrapper hidden" id="preview-wrapper">
-                <img id="image-preview" class="image-preview" alt="Barcode preview" />
-                <div class="preview-meta">
-                  <span class="preview-filename" id="preview-filename">—</span>
-                  <span class="preview-details" id="preview-details">—</span>
-                  <button type="button" id="remove-image-btn" class="btn btn-secondary btn-sm">Remove Image</button>
+                <div class="preview-wrapper hidden" id="preview-wrapper">
+                  <img id="image-preview" src="" alt="Barcode preview" class="image-preview" />
+                  <div class="preview-meta">
+                    <div class="meta-row"><span id="preview-filename">—</span></div>
+                    <div class="meta-row text-muted"><span id="preview-details">—</span></div>
+                    <div class="preview-actions">
+                      <button type="button" class="btn btn-secondary btn-sm" id="remove-image-btn">Remove</button>
+                      <button type="button" class="btn btn-secondary btn-sm" id="force-recover-image-btn">Run Recovery Pipeline</button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Image Scan Action Bar -->
-            <div class="image-actions">
-              <button type="button" id="scan-image-btn" class="btn btn-primary btn-block" disabled>
-                <span id="scan-image-btn-text">Scan Image for Barcode</span>
-                <span id="scan-image-spinner" class="spinner hidden"></span>
-              </button>
-            </div>
+              <div class="image-scan-actions">
+                <button type="button" class="btn btn-primary btn-block" id="scan-image-btn">
+                  <span id="scan-image-btn-text">Scan Image for Barcode</span>
+                  <span id="scan-image-spinner" class="spinner hidden"></span>
+                </button>
+              </div>
 
-            <!-- Multi-Barcode Selection Modal / Card -->
-            <div id="multi-barcode-card" class="multi-barcode-card hidden">
-              <div class="multi-barcode-header">
-                <span class="multi-barcode-icon">⚠️</span>
-                <div>
+              <!-- Multi-Barcode Selection Card -->
+              <div class="multi-barcode-card hidden" id="multi-barcode-card">
+                <div class="multi-barcode-header">
+                  <span class="multi-icon">ℹ️</span>
                   <strong>Multiple Barcodes Detected</strong>
-                  <p class="multi-barcode-desc">Select which barcode to identify:</p>
                 </div>
+                <p class="multi-desc">Select which detected code you want to look up:</p>
+                <div class="multi-barcode-options" id="multi-barcode-options"></div>
               </div>
-              <div class="multi-barcode-options" id="multi-barcode-options"></div>
-            </div>
 
-            <!-- Sample Demo Images for Quick Testing -->
-            <div class="demo-hints">
-              <span class="demo-hints-label">Try Sample Barcode Images:</span>
-              <div class="demo-chips">
-                <button type="button" class="chip chip-sample" data-sample="valid_demo_br01.png">Demo: BR000001 (Casual)</button>
-                <button type="button" class="chip chip-sample" data-sample="valid_demo_br05.png">Demo: BR000005 (Kurti)</button>
-                <button type="button" class="chip chip-sample" data-sample="valid_demo_br09.png">Demo: BR000009 (Abaya)</button>
-                <button type="button" class="chip chip-sample" data-sample="multi_barcodes.png">Sample: Multi-Barcode</button>
-                <button type="button" class="chip chip-sample chip-invalid" data-sample="no_barcode_blank.png">Sample: No Barcode</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- PANEL 3: Live Mobile Camera Scanner -->
-          <div id="panel-camera" class="tab-panel hidden">
-            <!-- Camera Controls Toolbar -->
-            <div class="camera-toolbar">
-              <div class="camera-toolbar-left">
-                <button type="button" id="camera-start-btn" class="btn btn-primary">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                  <span id="camera-start-btn-text">Start Camera</span>
-                </button>
-                <button type="button" id="camera-stop-btn" class="btn btn-secondary hidden">
-                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="6" width="12" height="12"/>
-                  </svg>
-                  <span>Stop Camera</span>
-                </button>
-              </div>
-              <div class="camera-toolbar-right">
-                <select id="camera-device-select" class="camera-select hidden" aria-label="Select Camera Device">
-                  <option value="">Rear Camera (Default)</option>
-                </select>
-                <button type="button" id="camera-torch-btn" class="btn btn-secondary btn-icon-only hidden" title="Toggle Flashlight">
-                  💡
-                </button>
+              <!-- Sample Image Chips -->
+              <div class="sample-images-group">
+                <span class="chips-label">Sample test images:</span>
+                <div class="chips-scroll">
+                  <button type="button" class="chip chip-sample" data-sample="valid_demo_br01.png">Demo BR01 (PNG)</button>
+                  <button type="button" class="chip chip-sample" data-sample="valid_demo_br05.png">Demo BR05 (PNG)</button>
+                  <button type="button" class="chip chip-sample" data-sample="multi_barcodes.png">Multi-Barcode</button>
+                  <button type="button" class="chip chip-sample" data-sample="no_barcode_blank.png">Blank (No Barcode)</button>
+                </div>
               </div>
             </div>
 
-            <!-- Live Viewfinder / Video Container -->
-            <div class="viewfinder-container" id="camera-viewfinder-container">
-              <!-- Inactive Placeholder -->
-              <div class="viewfinder-placeholder" id="camera-placeholder">
-                <div class="placeholder-graphic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </div>
-                <div class="placeholder-title">Live Mobile Camera Scanner</div>
-                <div class="placeholder-subtitle">
-                  Press <strong>Start Camera</strong> to begin real-time barcode scanning.
-                </div>
-                <div class="placeholder-hint">
-                  Camera permission is requested only after pressing Start Camera.
-                </div>
+            <!-- Mode 3: Live Camera Scan -->
+            <div class="mode-panel hidden" id="panel-camera" role="tabpanel" aria-labelledby="tab-camera-btn">
+              <div class="camera-placeholder" id="camera-placeholder">
+                <div class="camera-icon-large">📷</div>
+                <h3>Camera is inactive</h3>
+                <p>Click Start Camera to begin real-time scanning with your device camera.</p>
+                <button type="button" class="btn btn-primary" id="camera-start-btn">Start Camera</button>
               </div>
 
-              <!-- Active Video Frame -->
-              <div class="viewfinder-active hidden" id="camera-active-view">
-                <video id="camera-video" playsinline muted autoplay></video>
-                <!-- Reticle and Target Overlay -->
-                <div class="viewfinder-overlay">
+              <div class="camera-active-view hidden" id="camera-active-view">
+                <div class="camera-toolbar">
+                  <select id="camera-device-select" class="form-input form-select-sm" title="Choose camera"></select>
+                  <button type="button" id="camera-torch-btn" class="btn btn-secondary btn-sm hidden" title="Toggle flashlight">🔦 Torch</button>
+                  <button type="button" id="camera-snap-recover-btn" class="btn btn-secondary btn-sm" title="Capture frame for damaged recovery">🩹 Snapshot Recovery</button>
+                  <button type="button" id="camera-stop-btn" class="btn btn-danger btn-sm">Stop Camera</button>
+                </div>
+
+                <div class="viewfinder-container" id="camera-viewfinder-container">
+                  <video id="camera-video" class="camera-video" playsinline muted autoplay></video>
                   <div class="viewfinder-frame" id="viewfinder-frame">
-                    <span class="corner corner-tl"></span>
-                    <span class="corner corner-tr"></span>
-                    <span class="corner corner-bl"></span>
-                    <span class="corner corner-br"></span>
                     <div class="viewfinder-laser" id="viewfinder-laser"></div>
+                    <div class="viewfinder-corner top-left"></div>
+                    <div class="viewfinder-corner top-right"></div>
+                    <div class="viewfinder-corner bottom-left"></div>
+                    <div class="viewfinder-corner bottom-right"></div>
                   </div>
-                  <div class="viewfinder-tip" id="viewfinder-tip">Align barcode within the target frame</div>
-                  <div class="viewfinder-status" id="camera-status-chip">
-                    <span class="status-pulse"></span>
-                    <span id="camera-status-text">Scanning...</span>
+                  <div class="camera-status-chip" id="camera-status-chip">
+                    <span class="status-dot green"></span>
+                    <span id="camera-status-text">Align barcode in frame</span>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Post-Scan Controls (Appears on successful detection) -->
-            <div id="camera-scan-success-bar" class="camera-success-bar hidden">
-              <div class="success-message">
-                <span class="success-icon">✓</span>
-                <span>Barcode detected! Paused to avoid duplicate scans.</span>
-              </div>
-              <div class="success-actions">
-                <button type="button" id="camera-resume-btn" class="btn btn-primary btn-sm">
-                  Scan Another Barcode
-                </button>
-              </div>
-            </div>
-
-            <!-- Security & HTTPS Information Callout -->
-            <div class="camera-info-banner">
-              <div class="info-banner-icon">🔒</div>
-              <div class="info-banner-text">
-                <strong>Mobile Security Notice:</strong> Modern mobile browsers require HTTPS for camera streaming outside <code>localhost</code>. If accessing from a phone over local Wi-Fi, you can also use the <a href="#" id="link-switch-upload">Upload Image</a> tab to take photos using your mobile camera without HTTPS restrictions.
-              </div>
-            </div>
-
-            <!-- Fallback Notice -->
-            <div class="camera-fallback-card hidden" id="camera-fallback-card">
-              <div class="fallback-icon">⚠️</div>
-              <div class="fallback-content">
-                <strong id="camera-fallback-title">Camera Unavailable</strong>
-                <p id="camera-fallback-message">Camera access could not be initialized.</p>
-                <div class="fallback-links">
-                  <button type="button" class="btn btn-secondary btn-sm" id="btn-fallback-manual">Use Manual Input</button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="btn-fallback-upload">Use Image Upload</button>
+                <div class="camera-success-bar hidden" id="camera-scan-success-bar">
+                  <span class="success-message">✓ Barcode detected!</span>
+                  <button type="button" id="camera-resume-btn" class="btn btn-secondary btn-sm">Scan Another Barcode</button>
                 </div>
+              </div>
+
+              <!-- Camera Fallback / Permission Notice Card -->
+              <div class="camera-fallback-card hidden" id="camera-fallback-card">
+                <div class="fallback-header">
+                  <span class="fallback-icon">⚠️</span>
+                  <strong id="camera-fallback-title">Camera Unavailable</strong>
+                </div>
+                <p id="camera-fallback-message">Camera access could not be started.</p>
+                <div class="mobile-security-notice">
+                  <strong>Mobile Security Notice:</strong> Browsers require secure HTTPS or localhost to access camera streams. If camera is blocked, use Upload Image or Manual entry.
+                </div>
+                <div class="fallback-actions">
+                  <button type="button" id="btn-fallback-manual" class="btn btn-secondary btn-sm">Use Manual Entry</button>
+                  <button type="button" id="btn-fallback-upload" class="btn btn-secondary btn-sm">Upload Photo Instead</button>
+                </div>
+              </div>
+
+              <div class="camera-footer-note">
+                <small>Camera processing runs entirely inside your browser. No video is transmitted to the server. <a href="#" id="link-switch-upload">Switch to image upload</a></small>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Alert Notification Box -->
-        <div id="status-alert" class="alert alert-idle" role="alert">
-          <div class="alert-icon" id="alert-icon">ℹ️</div>
-          <div class="alert-content">
-            <div class="alert-title" id="alert-title">Ready for Scanning</div>
-            <div class="alert-message" id="alert-message">
-              Scan with USB scanner, enter code, upload an image, or use the live camera.
-            </div>
-          </div>
-        </div>
-
-        <!-- Product Identification Display -->
-        <div class="card product-card" id="product-card">
-          <div class="card-header">
-            <h2>Product Identification &amp; Category</h2>
-            <span class="badge" id="product-status-badge">Awaiting Scan</span>
-          </div>
-
-          <div class="product-body" id="product-body">
-            <div class="product-placeholder" id="product-placeholder">
-              <p>No product scanned yet. Scan or upload an image to view product details and category classification.</p>
+          <!-- Right Column: Product Result Display -->
+          <div class="scan-result-card card" id="product-card">
+            <div class="card-header">
+              <div>
+                <h2>Product Details</h2>
+                <div class="detected-code-row">
+                  <span class="code-label">Detected Code:</span>
+                  <strong class="code-value" id="detected-barcode-display">None</strong>
+                  <span class="badge badge-source" id="decoding-source-badge">Decoded normally</span>
+                </div>
+              </div>
+              <span class="badge" id="product-status-badge">Awaiting Scan</span>
             </div>
 
-            <div class="product-details hidden" id="product-details">
-              <div class="product-main">
-                <div class="product-name" id="product-name">—</div>
-                <div class="product-category-box">
-                  <span class="category-tag-label">Identified Category:</span>
-                  <div class="category-tag" id="product-category-name">—</div>
+            <div class="product-body" id="product-body">
+              <!-- State 1: Placeholder / Empty -->
+              <div class="product-placeholder" id="product-placeholder">
+                <div class="placeholder-icon">🏷️</div>
+                <h3>No barcode scanned yet</h3>
+                <p>Scan a code with your camera, upload an image, or enter a number on the left to see matching product details.</p>
+              </div>
+
+              <!-- State 2: Looking Up -->
+              <div class="product-state-panel hidden" id="product-looking-up">
+                <div class="loading-spinner-large"></div>
+                <div class="state-title">Looking up product...</div>
+                <p class="state-desc" id="looking-up-desc">Checking catalog database for barcode details.</p>
+              </div>
+
+              <!-- State 3: Product Found (Success) -->
+              <div class="product-details hidden" id="product-details">
+                <div class="product-header-block">
+                  <div class="product-name" id="product-name">—</div>
+                  <div class="category-pill-box">
+                    <span class="label-tiny">Category:</span>
+                    <span class="category-tag" id="product-category-name">—</span>
+                  </div>
+                </div>
+
+                <div class="product-meta-table">
+                  <div class="meta-item">
+                    <span class="meta-label">Product ID</span>
+                    <span class="meta-val" id="product-id">—</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Barcode</span>
+                    <span class="meta-val" id="product-barcode">—</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Category ID</span>
+                    <span class="meta-val" id="product-category-id">—</span>
+                  </div>
+                </div>
+
+                <div class="product-actions-bar">
+                  <button type="button" id="btn-bookmark-product" class="btn btn-secondary btn-sm" title="Bookmark this product">
+                    ★ Bookmark
+                  </button>
+                  <button type="button" id="btn-compare-product" class="btn btn-secondary btn-sm" title="Add to comparison table">
+                    ⚖️ Compare
+                  </button>
+                  <button type="button" id="btn-add-batch-product" class="btn btn-secondary btn-sm" title="Add to current batch session">
+                    📦 Add to Batch
+                  </button>
                 </div>
               </div>
 
-              <div class="product-meta-grid">
-                <div class="meta-item">
-                  <span class="meta-label">Barcode</span>
-                  <span class="meta-value" id="product-barcode">—</span>
+              <!-- State 4: Not in Catalog (404) -->
+              <div class="product-state-panel state-not-found hidden" id="product-not-found">
+                <div class="state-icon">🔍</div>
+                <div class="state-title">Barcode Not in Catalogue</div>
+                <p class="state-desc" id="not-found-desc">
+                  This barcode was successfully read, but no matching product exists in the current catalogue.
+                </p>
+                <div class="catalog-disclaimer-box">
+                  <span class="info-icon">ℹ️</span>
+                  <span>Missing-product submissions are temporarily paused while durable storage and administrative review are configured.</span>
                 </div>
-                <div class="meta-item">
-                  <span class="meta-label">Product ID</span>
-                  <span class="meta-value" id="product-id">—</span>
+                <div class="state-actions">
+                  <button type="button" id="btn-open-submit-inline" class="btn btn-secondary btn-sm">
+                    📝 Submission Status Info
+                  </button>
+                  <button type="button" id="btn-retry-notfound" class="btn btn-primary btn-sm">
+                    🔄 Retry Scan
+                  </button>
                 </div>
-                <div class="meta-item">
-                  <span class="meta-label">Category ID</span>
-                  <span class="meta-value" id="product-category-id">—</span>
+              </div>
+
+              <!-- State 5: Invalid Barcode (400) -->
+              <div class="product-state-panel state-invalid-code hidden" id="product-invalid-code">
+                <div class="state-icon">⚠️</div>
+                <div class="state-title">Invalid Barcode Format</div>
+                <p class="state-desc" id="invalid-code-desc">The barcode string is empty or does not conform to supported barcode formats.</p>
+                <div class="state-actions">
+                  <button type="button" id="btn-retry-invalid" class="btn btn-secondary btn-sm">Try Again</button>
                 </div>
-                <div class="meta-item">
-                  <span class="meta-label">Category Code</span>
-                  <span class="meta-value" id="product-category-code">—</span>
+              </div>
+
+              <!-- State 6: Lookup Error -->
+              <div class="product-state-panel state-error hidden" id="product-lookup-error">
+                <div class="state-icon">❌</div>
+                <div class="state-title">Lookup Error</div>
+                <p class="state-desc" id="lookup-error-desc">Could not reach the server or process product lookup.</p>
+                <div class="state-actions">
+                  <button type="button" id="btn-retry-error" class="btn btn-secondary btn-sm">Retry Lookup</button>
                 </div>
               </div>
             </div>
@@ -323,43 +379,601 @@
         </div>
       </section>
 
-      <!-- Right Column: Category Summary & Recent Scans -->
-      <aside class="sidebar-section">
-        <!-- Category Summary -->
-        <div class="card categories-summary-card">
-          <div class="card-header">
-            <h2>Category Catalogue</h2>
-            <span class="badge badge-info" id="total-categories-count">8 Categories</span>
+      <!-- =================================================================== -->
+      <!-- SECTION 2: DAMAGED BARCODE RECOVERY -->
+      <!-- =================================================================== -->
+      <section id="section-recovery" class="page-section hidden">
+        <div class="recovery-container">
+          <div class="section-intro-card card">
+            <h2>Damaged Barcode Recovery (EAN-13)</h2>
+            <p class="intro-text">
+              When standard camera or image decoding fails because a barcode is scratched, faded, smudged, low-contrast, or tilted, the recovery pipeline tests 40 horizontal scanlines with guard pattern verification and strict multi-scanline consensus to safely read the code.
+            </p>
+            <div class="recovery-safety-note">
+              <span class="note-icon">🛡️</span>
+              <span><strong>Safety Rule:</strong> The pipeline only accepts a result when evidence is unambiguous. If a barcode is too damaged, it safely abstains rather than inventing an incorrect product code.</span>
+            </div>
           </div>
-          <div class="category-list" id="category-summary-list">
-            <div class="loading-spinner">Loading categories...</div>
-          </div>
-        </div>
 
-        <!-- Recent Scan History -->
-        <div class="card history-card">
-          <div class="card-header">
-            <h2>Recent Scan History</h2>
-            <button type="button" id="clear-history-btn" class="btn btn-secondary btn-sm">Clear</button>
+          <!-- Recovery Tester Area -->
+          <div class="recovery-test-card card">
+            <div class="card-header">
+              <h3>Test Damaged Image Recovery</h3>
+            </div>
+            <div class="test-controls-row">
+              <div class="file-picker-group">
+                <label for="recovery-file-input" class="btn btn-secondary btn-sm">
+                  📁 Choose Damaged Barcode Image
+                </label>
+                <input type="file" id="recovery-file-input" class="file-input-hidden" accept="image/jpeg,image/png,image/webp" />
+                <span id="recovery-filename-display" class="filename-text text-muted">No file chosen</span>
+              </div>
+              <button type="button" id="btn-run-recovery" class="btn btn-primary btn-sm">
+                <span>Run Safe Recovery</span>
+                <span id="recovery-spinner" class="spinner hidden"></span>
+              </button>
+            </div>
+
+            <div class="benchmark-samples-row">
+              <span class="chips-label">Or test with controlled synthetic damage:</span>
+              <div class="chips-scroll">
+                <button type="button" class="chip chip-recovery-sample" data-sample="low_contrast">Low Contrast</button>
+                <button type="button" class="chip chip-recovery-sample" data-sample="fading">Fading</button>
+                <button type="button" class="chip chip-recovery-sample" data-sample="scratches">Scratches</button>
+                <button type="button" class="chip chip-recovery-sample" data-sample="smudges">Smudges</button>
+                <button type="button" class="chip chip-recovery-sample" data-sample="skew">Skew / Tilt</button>
+                <button type="button" class="chip chip-recovery-sample" data-sample="severe_noise">Severe Noise (Abstains)</button>
+              </div>
+            </div>
           </div>
-          <div class="history-content">
-            <div class="history-empty" id="history-empty">No scan events recorded this session.</div>
-            <ul class="history-list hidden" id="history-list"></ul>
+
+          <!-- Recovery Transparency Card (Present in DOM for testing & inspection) -->
+          <div class="recovery-transparency-card card hidden" id="recovery-transparency-card">
+            <div class="card-header">
+              <div>
+                <h3>Recovery Results &amp; Signal Inspection</h3>
+                <div class="verdict-row">
+                  <span class="label-tiny">Outcome:</span>
+                  <span class="badge" id="recovery-status-pill">Awaiting analysis</span>
+                  <span class="badge badge-source" id="recovery-method-badge">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="recovery-result-body">
+              <div class="recovery-result-summary" id="recovery-result-summary">
+                <p id="recovery-status-text">Select or upload an image to analyze.</p>
+              </div>
+
+              <!-- Side-by-side Visual Crops -->
+              <div class="transparency-crops-container">
+                <div class="crop-column">
+                  <div class="crop-header">Original Captured Crop</div>
+                  <div class="crop-img-box">
+                    <img id="transparency-original-img" src="" alt="Original captured crop" />
+                  </div>
+                  <small class="text-muted">Unprocessed region of interest</small>
+                </div>
+                <div class="crop-column">
+                  <div class="crop-header">Processed &amp; Aligned Crop</div>
+                  <div class="crop-img-box">
+                    <img id="transparency-enhanced-img" src="" alt="Enhanced crop" />
+                  </div>
+                  <small class="text-muted">Contrast lifted &amp; tilt aligned</small>
+                </div>
+              </div>
+
+              <!-- Required Transparency Notice -->
+              <div class="transparency-notice-box" id="transparency-notice">
+                <span class="notice-icon">ℹ️</span>
+                <span><strong>Transparency Notice:</strong> The enhanced crop visualizer is displayed to inspect the signal processing steps (contrast normalization and tilt correction) used to sample the waveform. It does not mean the physical barcode was repaired.</span>
+              </div>
+
+              <!-- Technical Details Accordion (Calm & Optional for Non-technical Users) -->
+              <details class="recovery-details-accordion">
+                <summary class="accordion-summary">More details (Signal &amp; Consensus Metrics)</summary>
+                <div class="accordion-content">
+                  <div class="metrics-grid">
+                    <div class="metric-box">
+                      <span class="metric-label">Scanline Agreement</span>
+                      <strong class="metric-val" id="recovery-scanline-consensus">—</strong>
+                    </div>
+                    <div class="metric-box">
+                      <span class="metric-label">Margin of Victory</span>
+                      <strong class="metric-val" id="recovery-margin-victory">—</strong>
+                    </div>
+                    <div class="metric-box">
+                      <span class="metric-label">Calibrated Module Width</span>
+                      <strong class="metric-val" id="recovery-calibrated-modules">—</strong>
+                    </div>
+                    <div class="metric-box">
+                      <span class="metric-label">Tilt / Skew Angle</span>
+                      <strong class="metric-val" id="recovery-skew-angle">—</strong>
+                    </div>
+                  </div>
+                  <div class="abstention-info-box" id="recovery-abstention-box">
+                    <span class="label-tiny">Decision Rationale:</span>
+                    <p id="recovery-abstention-reason">—</p>
+                  </div>
+                </div>
+              </details>
+            </div>
           </div>
         </div>
-      </aside>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 3: SCAN HISTORY -->
+      <!-- =================================================================== -->
+      <section id="section-history" class="page-section hidden">
+        <div class="history-container card">
+          <div class="card-header">
+            <div>
+              <h2>Scan History</h2>
+              <p class="card-subtext">Recent scans from your current browser session. History is stored in memory and does not sync across devices or servers.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="clear-history-btn">Clear History</button>
+          </div>
+
+          <!-- History Filter Toolbar -->
+          <div class="history-toolbar">
+            <div class="search-input-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="history-search-input" class="form-input" placeholder="Search history by barcode, product or outcome..." />
+            </div>
+            <div class="filter-dropdowns">
+              <select id="history-method-filter" class="form-input form-select-sm">
+                <option value="all">All Methods</option>
+                <option value="camera">Live Camera</option>
+                <option value="image">Upload Image</option>
+                <option value="manual">Manual / USB</option>
+              </select>
+              <select id="history-status-filter" class="form-input form-select-sm">
+                <option value="all">All Outcomes</option>
+                <option value="found">Product Found</option>
+                <option value="not_found">Not in Catalog</option>
+                <option value="invalid">Invalid</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Table / List -->
+          <div class="history-table-container">
+            <table class="data-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Barcode</th>
+                  <th>Method</th>
+                  <th>Product / Outcome</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+            <!-- Backward compatibility list element for test assertion -->
+            <ul id="history-list" class="history-list-hidden"></ul>
+            <div class="empty-state-card" id="history-empty">
+              <div class="empty-icon">📋</div>
+              <h3>No scans yet this session</h3>
+              <p>Scanned items will appear here automatically with their timestamp and product details.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 4: PRODUCTS CATALOGUE -->
+      <!-- =================================================================== -->
+      <section id="section-products" class="page-section hidden">
+        <div class="products-section-container">
+          <!-- Products Toolbar -->
+          <div class="products-toolbar card">
+            <div class="products-search-row">
+              <div class="search-input-box flex-grow">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="products-search-input" class="form-input" placeholder="Search recognized products by name or barcode..." />
+              </div>
+              <span class="products-total-count text-muted" id="products-matched-count">Showing 16 products</span>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="category-pills-scroll" id="products-category-pills">
+              <!-- Dynamically populated category chips -->
+            </div>
+          </div>
+
+          <!-- Products Master-Detail Layout -->
+          <div class="products-layout-grid">
+            <!-- Left: Product List -->
+            <div class="products-list-card card">
+              <div class="products-list" id="products-list-container">
+                <div class="loading-spinner">Loading products catalogue...</div>
+              </div>
+            </div>
+
+            <!-- Right: Product Detail View -->
+            <div class="product-detail-card card" id="products-detail-card">
+              <div class="detail-placeholder" id="products-detail-placeholder">
+                <div class="placeholder-icon">👈</div>
+                <h3>Select a product</h3>
+                <p>Click any product on the left to inspect its verified details and barcode.</p>
+              </div>
+
+              <div class="detail-content hidden" id="products-detail-content">
+                <div class="detail-header">
+                  <span class="category-tag" id="detail-category-badge">—</span>
+                  <h2 id="detail-product-name">—</h2>
+                  <div class="detail-barcode-row">
+                    <span class="barcode-num" id="detail-barcode-val">—</span>
+                  </div>
+                </div>
+
+                <!-- Attributes Comparison Table (Actual Model vs Not Available) -->
+                <div class="detail-attributes-group">
+                  <h4>Recorded Catalog Attributes</h4>
+                  <div class="attributes-grid">
+                    <div class="attr-row">
+                      <span class="attr-name">Product ID:</span>
+                      <strong class="attr-val" id="detail-attr-id">—</strong>
+                    </div>
+                    <div class="attr-row">
+                      <span class="attr-name">Barcode (Code 128 / EAN-13):</span>
+                      <strong class="attr-val" id="detail-attr-barcode">—</strong>
+                    </div>
+                    <div class="attr-row">
+                      <span class="attr-name">Category Classification:</span>
+                      <strong class="attr-val" id="detail-attr-category">—</strong>
+                    </div>
+                    <div class="attr-row">
+                      <span class="attr-name">Price:</span>
+                      <span class="attr-val text-muted">Not available</span>
+                    </div>
+                    <div class="attr-row">
+                      <span class="attr-name">Stock Quantity:</span>
+                      <span class="attr-val text-muted">Not available</span>
+                    </div>
+                    <div class="attr-row">
+                      <span class="attr-name">Brand / Manufacturer:</span>
+                      <span class="attr-val text-muted">Not available</span>
+                    </div>
+                  </div>
+                  <small class="text-muted">Unrecorded fields are marked "Not available" because the application data model stores only ID, barcode, name, and category.</small>
+                </div>
+
+                <div class="detail-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-bookmark">★ Bookmark</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-batch">📦 Add to Batch</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-compare">⚖️ Compare</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="detail-btn-scan">🔍 Scan in Scanner</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 5: BATCH SCAN SESSION -->
+      <!-- =================================================================== -->
+      <section id="section-batch" class="page-section hidden">
+        <div class="batch-page-container card">
+          <div class="card-header">
+            <div>
+              <h2>Batch Scan Session</h2>
+              <p class="card-subtext">Collect multiple scans in a temporary session. Notice: This is a local collection session only and does not modify stock counts or inventory databases.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-batch">Clear Batch Session</button>
+          </div>
+
+          <div class="batch-stats-bar">
+            <span class="stat-pill"><strong id="batch-total-scans">0</strong> Total Scans</span>
+            <span class="stat-pill"><strong id="batch-distinct-codes">0</strong> Unique Products</span>
+          </div>
+
+          <div class="batch-table-container">
+            <table class="data-table" id="batch-table">
+              <thead>
+                <tr>
+                  <th>Barcode</th>
+                  <th>Product Name</th>
+                  <th>Category</th>
+                  <th>Count</th>
+                  <th>Last Scanned</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="batch-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+            <div class="empty-state-card" id="batch-empty">
+              <div class="empty-icon">📦</div>
+              <h3>Batch session is empty</h3>
+              <p>Turn on "Batch Mode" on the Scan page, or click "Add to Batch" on any product to collect multiple scans here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 6: SAVED PRODUCTS -->
+      <!-- =================================================================== -->
+      <section id="section-saved" class="page-section hidden">
+        <div class="saved-page-container card">
+          <div class="card-header">
+            <div>
+              <h2>Saved Products (Bookmarks)</h2>
+              <p class="card-subtext">Saved products are kept in your local browser storage (<span class="code-span">localStorage</span>) and are device/browser-specific. They do not sync across devices.</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-saved">Clear All Saved</button>
+          </div>
+
+          <div class="saved-list-container" id="saved-list">
+            <!-- Dynamically populated saved cards -->
+          </div>
+          <div class="empty-state-card" id="saved-empty">
+            <div class="empty-icon">★</div>
+            <h3>No saved products yet</h3>
+            <p>Click the "★ Bookmark" button on any scanned or catalogue product to save it here for quick access.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 7: PRODUCT COMPARISON -->
+      <!-- =================================================================== -->
+      <section id="section-compare" class="page-section hidden">
+        <div class="compare-page-container card">
+          <div class="card-header">
+            <div>
+              <h2>Product Comparison</h2>
+              <p class="card-subtext">Compare up to 4 catalogue products side by side using verified fields. Attributes not tracked in the catalogue model are explicitly marked "Not available".</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-clear-comparison">Clear Comparison</button>
+          </div>
+
+          <div class="comparison-table-wrapper" id="comparison-table-wrapper">
+            <table class="comparison-table" id="comparison-table">
+              <thead id="comparison-thead">
+                <!-- Dynamically populated column headers -->
+              </thead>
+              <tbody id="comparison-tbody">
+                <!-- Dynamically populated attribute rows -->
+              </tbody>
+            </table>
+            <div class="empty-state-card" id="comparison-empty">
+              <div class="empty-icon">⚖️</div>
+              <h3>No products selected for comparison</h3>
+              <p>Click "Compare" on scanned items or products in the catalogue to add them here (up to 4 products).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 8: CATALOGUE OVERVIEW -->
+      <!-- =================================================================== -->
+      <section id="section-catalog" class="page-section hidden">
+        <div class="catalog-overview-container card">
+          <div class="card-header">
+            <div>
+              <h2>Catalogue Overview &amp; Categories</h2>
+              <p class="card-subtext">Verified product counts and categories recognized by the application.</p>
+            </div>
+          </div>
+
+          <div class="overview-stats-cards">
+            <div class="stat-card">
+              <div class="stat-num" id="stat-total-products">16</div>
+              <div class="stat-label">Recognized Products</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-total-categories">8</div>
+              <div class="stat-label">Product Categories</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">0%</div>
+              <div class="stat-label">False IDs in Benchmarks</div>
+            </div>
+          </div>
+
+          <div class="catalog-disclaimer-box">
+            <span class="info-icon">ℹ️</span>
+            <span id="catalog-coverage-note">Category coverage percentages are not reported because the total potential market products for each category are unrecorded in this system.</span>
+          </div>
+
+          <div class="categories-list-block">
+            <h3>Categories Breakdown</h3>
+            <div class="category-summary-list" id="category-summary-list">
+              <div class="loading-spinner">Loading categories...</div>
+            </div>
+          </div>
+
+          <div class="submission-status-banner">
+            <div class="banner-icon">ℹ️</div>
+            <div class="banner-body">
+              <strong>Missing-Product Submissions Status:</strong>
+              <p>Missing-product submissions are temporarily disabled. The application currently operates on ephemeral hosting without durable persistent storage (e.g. database or volume) and lacks an authenticated administrative review workflow. Unregistered barcodes cannot be saved at this time.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- SECTION 9: PRINT LABELS -->
+      <!-- =================================================================== -->
+      <section id="section-labels" class="page-section hidden">
+        <div class="labels-page-container card">
+          <div class="card-header">
+            <div>
+              <h2>Printable Barcode Labels</h2>
+              <p class="card-subtext">Download and print official 100% scale barcode sheets for all 16 recognized products.</p>
+            </div>
+          </div>
+
+          <div class="labels-content-grid">
+            <!-- Download Cards -->
+            <div class="download-card">
+              <div class="pdf-icon">📄</div>
+              <h3>16-in-1 A4 Label Sheet (PDF)</h3>
+              <p>Standard 2×8 grid containing all 16 products on a single A4 page with cutting guidelines and product details.</p>
+              <a href="/api/labels/pdf" target="_blank" class="btn btn-primary">
+                Download A4 Sheet (PDF)
+              </a>
+            </div>
+
+            <div class="download-card">
+              <div class="pdf-icon">📑</div>
+              <h3>Large Format A4 Sheet (2 Pages)</h3>
+              <p>Large-format barcodes with extra height, ideal for product cartons, shelves, and long-range scanning.</p>
+              <a href="/generated/barcodes/demo_labels_large_a4.pdf" target="_blank" class="btn btn-secondary">
+                Download Large Sheet (PDF)
+              </a>
+            </div>
+          </div>
+
+          <div class="printing-guide-card">
+            <h3>Printing Guidelines for Reliable Scanning</h3>
+            <ul class="guide-list">
+              <li><strong>Paper Size:</strong> Select <strong>A4</strong> (210 × 297 mm).</li>
+              <li><strong>Scale Setting:</strong> Always choose <strong>100% / Actual Size</strong>. Do <em>not</em> use "Fit to Printable Area" or "Shrink to Fit", as scaling distorts narrow barcode bars.</li>
+              <li><strong>Quality:</strong> Standard or high quality on white paper or sticker sheets.</li>
+              <li><strong>Cutting:</strong> Cut along the light-gray dashed guidelines with scissors or a paper trimmer.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
     </main>
 
-    <!-- Footer -->
+    <!-- =================================================================== -->
+    <!-- PRESERVED MODALS (Maintained in DOM for tests & dialog fallbacks)   -->
+    <!-- =================================================================== -->
+    <div class="modal-backdrop hidden" id="modal-submission">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Missing-Product Submission Status</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-submission-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <div class="alert-title">Submission Intake Temporarily Disabled</div>
+              <div class="alert-message">
+                Missing-product submissions are temporarily disabled. The application currently operates on ephemeral hosting without durable persistent storage and lacks an authenticated administrative review workflow. Unregistered barcodes cannot be accepted or saved at this time. Existing pending data remains preserved intact.
+              </div>
+            </div>
+          </div>
+          <form id="submission-form" class="modal-form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="sub-barcode">Barcode String</label>
+              <input type="text" id="sub-barcode" class="form-input" readonly />
+            </div>
+            <div class="form-group">
+              <label for="sub-name">Proposed Product Name</label>
+              <input type="text" id="sub-name" class="form-input" placeholder="Submissions currently paused" disabled />
+            </div>
+            <div class="form-group">
+              <label for="sub-category">Proposed Category</label>
+              <select id="sub-category" class="form-input" disabled>
+                <option value="">— Category Selection Disabled —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sub-notes">Submission Notes</label>
+              <textarea id="sub-notes" class="form-input" rows="2" placeholder="Submissions currently paused" disabled></textarea>
+            </div>
+            <div class="modal-actions">
+              <button type="button" id="btn-cancel-submission" class="btn btn-secondary">Close</button>
+              <button type="submit" id="btn-submit-product-action" class="btn btn-secondary" disabled title="Submission intake is temporarily disabled">
+                <span>Intake Disabled</span>
+                <span id="sub-spinner" class="spinner hidden"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-comparison">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <h3>Product Comparison</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-comparison-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">Compare selected products side by side.</p>
+          <div class="modal-actions">
+            <button type="button" id="btn-close-comparison-btn" class="btn btn-secondary btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-saved">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Saved Products</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-saved-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-actions">
+            <button type="button" id="btn-close-saved-btn" class="btn btn-secondary btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-batch">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <h3>Batch Session</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-batch-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-actions">
+            <button type="button" id="btn-close-batch-btn" class="btn btn-secondary btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modal-catalog">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <h3>Product Catalogue Overview</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-catalog-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="category-overview-stats">
+            <span class="stat-pill"><strong id="modal-cat-products">16</strong> Catalog Products</span>
+            <span class="stat-pill"><strong id="modal-cat-categories">8</strong> Categories</span>
+          </div>
+          <p class="modal-intro" id="modal-cat-note">
+            Category coverage percentages are not reported because total potential market products per category are unrecorded in this system.
+          </p>
+          <div class="catalog-products-list" id="catalog-products-list"></div>
+          <div class="modal-actions">
+            <button type="button" id="btn-close-catalog-btn" class="btn btn-primary btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Footer -->
     <footer class="app-footer">
-      <div class="footer-content">
-        <span>LDAM Academic Project &bull; Barcode-Based Product Identification and Classification</span>
-        <span class="footer-note">Phase 3: Live Mobile Camera Scanning &bull; ZXing Engine</span>
+      <div class="footer-container">
+        <p>BarcodeReader &bull; LDAM Barcode Identification &amp; Safe Damaged EAN-13 Recovery</p>
       </div>
     </footer>
   </div>
 
-  <!-- Local Vendored ZXing Library for Browser Barcode Decoding -->
+  <!-- Scripts -->
   <script src="/static/vendor/zxing.min.js"></script>
   <script src="/static/app.js"></script>
 </body>

@@ -46,6 +46,11 @@ BarcodeReader/
 │       ├── app.js               # Frontend logic, camera scanner, ZXing image scanner & history
 │       ├── index.html           # 3-in-1 web interface (Manual / Image Upload / Live Camera)
 │       ├── style.css            # Clean, responsive styling with mobile support
+│       ├── favicon.ico          # Multi-resolution favicon (16x16, 32x32, 48x48)
+│       ├── favicon-32x32.png    # Retina 32x32 PNG favicon
+│       ├── favicon-16x16.png    # Standard 16x16 PNG favicon
+│       ├── apple-touch-icon.png # iOS home screen icon (180x180)
+│       ├── icon-192.png / icon-512.png # PWA icons
 │       ├── samples/             # Real sample barcode images for quick testing
 │       └── vendor/
 │           └── zxing.min.js     # Self-contained, offline ZXing barcode library
@@ -56,6 +61,8 @@ BarcodeReader/
 │       ├── MANIFEST.md          # Index of generated labels
 │       └── labels_png/          # 16 individual high-res PNG label cards
 ├── scripts/
+│   ├── evaluate_recovery.py     # Evaluation harness for damaged EAN-13 recovery
+│   ├── generate_favicon.py      # Favicon & multi-resolution app icon generator
 │   └── generate_labels.py       # Standalone label & PDF generation utility (cross-platform fonts)
 └── tests/
     ├── __init__.py              # Test package initializer
@@ -282,13 +289,199 @@ For verbose output with each individual test case:
 pytest -v
 ```
 
-The test suite validates 61 test cases across 6 test modules:
+The test suite validates 83 test cases across 9 test modules:
 - **`tests/test_api.py` (10 tests):** Barcode lookups, whitespace handling, 404 responses for unknown codes, 400/422 validation errors, category listings, and health metrics.
 - **`tests/test_catalogue.py` (13 tests):** Core catalogue integrity, category mapping resolution, unique barcode assertions, unique product ID assertions, and file error handling.
 - **`tests/test_image_decoding.py` (8 tests):** Vendored ZXing library delivery, real barcode image decoding (`valid_demo_br01.png`, `valid_demo_br05.png`, `valid_unknown_br99.png`), multi-barcode detection (`multi_barcodes.png`), non-barcode rejection (`no_barcode_blank.png`), unsupported file type rejection, and UI controls presence.
 - **`tests/test_labels.py` (20 tests):** End-to-end verification that all 16 generated label images decode correctly and map to the exact expected products and categories via `/api/scan`, plus PDF integrity.
 - **`tests/test_camera.py` (5 tests):** Live camera DOM controls, video feed elements, switching tab listeners, JavaScript security guards (`isSecureContext`), and CSS reticle styling.
-- **`tests/test_production.py` (5 tests):** Static asset delivery via FastAPI mounts, zero hardcoded API endpoints, `Procfile` command validation, `render.yaml` configuration, and dynamic label PDF regeneration on demand.
+- **`tests/test_production.py` (6 tests):** Static asset delivery via FastAPI mounts, `/favicon.ico` root route and HTML link tags, zero hardcoded API endpoints, `Procfile` command validation, `render.yaml` configuration, and dynamic label PDF regeneration on demand.
+- **`tests/test_recovery.py` (10 tests):** Check digit math, EAN-13 validation, standard ZXing fallback, recovery of low contrast, fading, skew, scratches, smudges, and abstention on blank/noise.
+- **`tests/test_submissions.py` (6 tests):** Hardened submission intake returning 503 Service Unavailable, removal of public GET submissions queue, non-leakage of pending counts in catalog overview, disk data preservation, catalog isolation, and `/api/recover` endpoint.
+- **`tests/test_ui_features.py` (3 tests):** HTML DOM controls for all features, JavaScript contracts for request sequencing, comparison "Not available" flags, non-inventory batching, and disabled submission safety handling.
+
+---
+
+## Safe Damaged EAN-13 Barcode Recovery Pipeline
+
+### Technical Contribution & Research Scope
+
+This project implements and evaluates a **structure-aware safe recovery pipeline** for damaged EAN-13 barcodes integrated directly into the application.
+
+> **Research Question:**  
+> *"For EAN-13 barcodes damaged by fading, scratches, smudges, low contrast, or skew, can a structure-aware recovery pipeline improve exact product-code recovery over a standard decoder without increasing false product identifications?"*
+
+Existing literature documents degraded 1D barcode signal recovery. This project does not claim to be the first barcode-repair system, nor does it claim universal recovery of every damaged barcode. Rather, it implements a safe, deterministic pipeline that improves recovery while strictly preventing false identifications through unambiguous evidence thresholds.
+
+### Pipeline Architecture (`app/recovery.py`)
+
+1. **Standard Decoder First:** The captured image is always presented to the project's standard decoder (vendored ZXing) first. If cleanly decoded, it returns `decoded_normally` without repair heuristics.
+2. **Deterministic Preprocessing:**
+   - **Contrast Normalization:** `ImageOps.autocontrast` expands dynamic range, lifting faint or low-contrast bars.
+   - **Skew Estimation & Alignment:** 1D projection gradient variance optimization scans candidate angles $\theta \in [-30^\circ, +30^\circ]$ to find the orientation maximizing vertical bar projection variance, correcting rotational misalignments up to 25°.
+3. **Multi-Scanline Horizontal Waveform Extraction:**
+   - Samples 40 horizontal scanlines across the vertical height of the barcode.
+   - Binary run-length demodulation identifies start guard (`101`), center guard (`01010`), and stop guard (`101`).
+   - Calibrates module width grids independently on the left half ($w_L$) and right half ($w_R$).
+   - Demodulates 6 left digits (testing L and G patterns) and 6 right digits (R patterns), and determines the leading digit from left parity.
+4. **Strict Safety & Decision Rule:**
+   - **Validation, Not Correction:** The EAN-13 check digit is used strictly to validate candidates. It is never used to synthesize or invent missing bars.
+   - **Consensus Threshold:** A candidate GTIN is only accepted if at least **5 independent horizontal scanlines** decode the exact same valid code.
+   - **Margin of Victory:** The top candidate must have $\ge 3\times$ the vote count of any runner-up candidate. If competing candidates exist with close vote counts, the pipeline abstains as ambiguous.
+   - **Catalog Independence:** The recovery engine is strictly isolated from catalogue lookups and never accepts a candidate simply because it matches a product in the catalog.
+   - **Safe Abstention:** If evidence is insufficient, guards are unidentifiable, or signals are ambiguous, the pipeline returns `abstained` and clearly explains why it refused to guess.
+5. **UI Transparency:**
+   - The UI distinguishes `"Decoded normally"` from `"Recovered from damaged image"` and `"Recovery Abstained"`.
+   - When recovery is attempted, side-by-side **Captured Image Crop** and **Enhanced & Aligned Crop** are displayed with the explicit notice:  
+     *“Transparency Notice: The enhanced crop is displayed for visual inspection of the signal processing steps and is not proof that the physical barcode was restored.”*
+
+### Known Recovery Limitations
+
+- **Physical Substrate Tears:** If guard patterns (start `101`, center `01010`, or stop `101`) are torn across all vertical heights, the pipeline safely abstains.
+- **Perspective / 3D Warping:** High perspective distortions across cylindrical bottles beyond 2D affine rotation require planar recalibration.
+- **Severe Blurring / Defocus:** When camera lens defocus completely merges adjacent bars into an unresolvable blur, the pipeline abstains rather than inventing values.
+
+---
+
+## Reproducible Evaluation Harness
+
+### Running the Evaluation Benchmark
+
+Run the evaluation harness from PowerShell:
+
+```powershell
+python scripts/evaluate_recovery.py --generate-dataset
+```
+
+The script evaluates both the standard decoder and the recovery pipeline on a paired dataset across controlled damage conditions, writing structured results to `generated/evaluation_report.json` and `generated/EVALUATION_REPORT.md`.
+
+### Evaluation Findings (Benchmark Dataset)
+
+| Metric | Standard Decoder (ZXing) | Standard + Recovery Pipeline | Delta |
+| :--- | :--- | :--- | :--- |
+| **Exact Recovery Count** | 24 / 42 | **35 / 42** | **+11 recoveries (+26.2%)** |
+| **Exact Recovery Rate** | 57.1% | **83.3%** | **+26.2% improvement** |
+| **False Identification Count** | **0 / 42** | **0 / 42** | **0 false product identifications** |
+| **False Identification Rate** | **0.0%** | **0.0%** | **Maintained strict 0.0% false ID rate** |
+| **Abstention Count** | 18 / 42 (42.9%) | **7 / 42 (16.7%)** | Safely abstains on unrecoverable noise |
+
+### Breakdown by Controlled Damage Type
+
+| Damage Condition | N | Standard Decoder Exact | Recovery Pipeline Exact | False Identifications | Abstentions |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Clean Control** | 6 | 6 / 6 (100%) | **6 / 6 (100%)** | 0 (0.0%) | 0 |
+| **Fading (Low Amplitude)** | 6 | 6 / 6 (100%) | **6 / 6 (100%)** | 0 (0.0%) | 0 |
+| **Scratches (Horizontal Cuts)** | 6 | 6 / 6 (100%) | **6 / 6 (100%)** | 0 (0.0%) | 0 |
+| **Smudges (Ink Blotches)** | 6 | 6 / 6 (100%) | **6 / 6 (100%)** | 0 (0.0%) | 0 |
+| **Low Contrast (15-Level Window)**| 6 | 0 / 6 (0%) | **6 / 6 (100%)** | 0 (0.0%) | 0 |
+| **Skew (25° Rotation)** | 6 | 0 / 6 (0%) | **5 / 6 (83.3%)** | 0 (0.0%) | 1 |
+| **Severe Unrecoverable Noise** | 6 | 0 / 6 (0%) | **0 / 6 (0%)** | **0 (0.0%)** | **6 (100% abstention)** |
+
+> **Synthetic Dataset Disclosure:** All automated benchmark images are synthetic degradations with verified ground-truth GTINs. They serve as a controlled ablation suite and must not be presented as real-world field data.
+
+### Extending with Real Captured Barcode Images
+
+Instructions for adding real-world photographed barcode images to the benchmark:
+1. Save the captured photo into `tests/evaluation_dataset/images/` (e.g. `images/real_retail_box_01.png`).
+2. Verify the true product GTIN from the packaging.
+3. Add a corresponding entry in `tests/evaluation_dataset/manifest.json`:
+   ```json
+   {
+     "filename": "real_retail_box_01.png",
+     "relative_path": "images/real_retail_box_01.png",
+     "ground_truth_code": "4006381333931",
+     "damage_type": "real_glare_crease",
+     "synthetic": false,
+     "provenance": "Photographed using mobile phone under store lighting",
+     "description": "Packaging fold with specular glare"
+   }
+   ```
+4. Re-run `python scripts/evaluate_recovery.py` to evaluate the real-world sample alongside the synthetic set.
+
+---
+
+## Frontend Interface Redesign & Navigation Architecture
+
+The web interface is organized into a clean, minimal, 9-tab single-page application where only one focused section is active at any time. The interface adopts a calm, accessible aesthetic adhering to the palette extracted from design specifications (`#475569` Slate primary, `#58788C` Steel Blue secondary, `#738B7D` Sage tertiary, `#EDEEF0` soft warm-gray background):
+
+1. **Scan (Main):**
+   - 3 input modes: Live Camera, Image Upload, and Manual / USB Entry.
+   - Real-time states: Scanning, Looking up, Product found, Not in catalogue, Invalid code, and Network/lookup error.
+   - Displays detected code, product name, category, and lookup origin badge (`Normal scan`, `Recovered`, `Manual entry`).
+2. **Damaged Barcode Recovery:**
+   - Dedicated workspace for damaged EAN-13 recovery with live test fixtures (Fading, Scratch, Smudge, Low contrast, Skew).
+   - Side-by-side display of original capture and processed barcode crop.
+   - Required Transparency Notice explaining that image enhancement is an evidence extraction aid, not a physical reconstruction.
+   - Technical signal metrics (skew angle, scanline agreement %, candidate pattern validation) are tucked under an optional `<details>` "More technical details" disclosure so non-technical users are not overwhelmed.
+3. **Scan History:**
+   - Displays recent scans in the current session with timestamp, detected barcode, method, and lookup outcome.
+   - Search filter by barcode or name; filter by method and outcome.
+   - Click to reopen any prior result immediately.
+   - Session disclosure: Explains that history is session-only and does not sync across devices.
+4. **Products (Full Catalogue):**
+   - Live search across all 16 catalogue products with category filter pills (All 16, Dress, Ethnic, Casual, Formal, Sports, etc.).
+   - Interactive product inspector displaying verified attributes (`id`, `barcode`, `name`, `category`) and explicitly labeling unrecorded attributes (Price, Dimensions, Stock, Brand) as "Not available".
+5. **Batch:**
+   - Temporary scan collection session with duplicate count aggregation (`2×`, `3×`, etc.).
+   - Non-inventory disclaimer clarifying that batching does not mutate stock.
+6. **Saved Products:**
+   - Bookmark products with one click.
+   - Persisted in local browser storage (`localStorage`) with clear device/browser-specific disclaimer.
+7. **Compare:**
+   - Side-by-side comparison table of selected catalogue products using verified fields.
+   - Missing fields cleanly rendered as "Not available".
+8. **Catalog Overview:**
+   - Verified counts (16 products, 8 categories) and category summary breakdown.
+   - Notice of paused missing-product submissions.
+9. **Print Labels:**
+   - Direct download and access for the 16-in-1 printable A4 PDF sheet (`/api/labels/pdf`) and large format PDF with 100% scale guidelines.
+
+---
+
+## Practical Application Features
+
+### 1. Manual Barcode Entry
+- Allows entering barcode values manually when camera scanning is hindered.
+- Validates input format (Code 128 or 13-digit EAN-13 with check digit calculation).
+- Routes through the exact same lookup and state display as camera scanning.
+
+### 2. Scan History & Result Reopening
+- Tracks recent scans in the active session with timestamp, barcode, product name, and matching status.
+- Every history item is clickable, immediately reopening its product details.
+- Stores minimal data without persisting sensitive session tokens.
+
+### 3. Saved Products (Bookmarks)
+- Users can bookmark products with a single tap (`★ Bookmark`).
+- Persisted in local browser storage (`localStorage`), accompanied by clear disclosure:  
+  *“Saved items are stored in your local browser storage and are device/browser-specific.”*
+- Provides view and deletion controls.
+
+### 4. Batch Scan Session
+- Allows scanning multiple items sequentially into a temporary collection list.
+- Intelligently handles duplicate scans by updating the scan count (e.g. `2x`, `3x`) and timestamp without altering server stock counts.
+- Dedicated drawer displays all items with options to inspect, remove, or clear the session.
+
+### 5. Product Comparison
+- Side-by-side comparison of up to 4 catalogue products.
+- Uses strictly existing fields in the product model (`id`, `barcode`, `name`, `category_id`, `category_name`, `category_code`).
+- Attributes not stored in the application (Price, Dimensions, Brand, Material, Stock) are explicitly rendered as **“Not available”** without fabricating values.
+
+### 6. Missing-Product Submissions (Hardened & Intake Temporarily Disabled)
+- **Current Intake Status:** Submissions are **temporarily disabled** (returning `HTTP 503 Service Unavailable`). Unregistered barcodes cannot be submitted or saved at this time.
+- **Hosting & Ephemeral Storage Architecture:** The deployed application runs on stateless container infrastructure (`render.yaml` web service with no persistent disk or database). Writes to local files (such as `app/data/pending_submissions.json`) do not persist across instance restarts, redeployments, or container cycling. To prevent misleading users and avoid data loss, intake is disabled until durable storage exists.
+- **Privacy & Security Protection:** The previously exposed unauthenticated `GET /api/submissions` queue endpoint has been removed. No unprotected admin routes were created. Internal pending submission lists and queues are not accessible to public users.
+- **User Experience & Feedback:** In the frontend UI, clicking the missing-product information button opens an informative notice explaining that submission intake is temporarily disabled due to lack of durable storage and moderation. Form controls are disabled, preventing futile submission attempts.
+- **Preservation of Existing Data:** Existing historical pending entries in `app/data/pending_submissions.json` remain preserved on disk and are not deleted or corrupted.
+- **Prerequisites for Production Re-enablement:**
+  1. *Durable Storage:* Provisioning an external database (e.g. PostgreSQL, Redis) or an attached persistent volume so records survive restarts.
+  2. *Authenticated Administrative Review:* Implementing secure administrative authentication (e.g., session auth, OAuth2, or API tokens) and a protected moderation interface before submitted items can be reviewed and approved into the public catalogue.
+- **Remaining Limitations:** Missing-product submissions are strictly **not production-safe** in the current architecture and remain disabled until both durable persistent storage and an authenticated review path are implemented.
+
+### 7. Catalog Overview & Category Breakdown
+- **Verified Public Metrics:** `GET /api/catalog-overview` reports verified catalogue metrics: 16 products, 8 categories, and the complete category breakdown with codes and descriptions.
+- **Queue Privacy:** Internal pending submission counts and queue metrics are strictly excluded from public responses to prevent operational information leakage.
+- **Coverage Disclaimer:** Explicitly states: *“Category coverage percentages are not reported because total potential market products per category are unrecorded in this system.”*
+
 
 ---
 
