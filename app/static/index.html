@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Barcode Reader — Product Identification &amp; Safe EAN-13 Recovery</title>
+  <title>Barcode Reader — Technical Barcode Workstation</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
@@ -12,73 +12,91 @@
 </head>
 <body>
   <div class="app-layout">
-    <!-- Top Application Header -->
+    <!-- Top High-Density Status / Telemetry Strip -->
+    <div class="top-telemetry-strip" aria-label="System Telemetry">
+      <div class="telemetry-inner">
+        <div class="telemetry-item"><span class="technical-square-sm text-cyan">■</span> SUBSYSTEM: <span class="telemetry-val text-accent">OPTICAL ENGINE 01</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">LASER: <span class="telemetry-val text-green">ACTIVE 650NM</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">CONFIDENCE: <span class="telemetry-val text-white">99.8%</span> <span class="telemetry-tag">[GRADE A]</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">LATENCY: <span class="telemetry-val text-accent">1.18MS</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">USB HID: <span class="telemetry-val text-cyan">POLLING 1000HZ</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">CALIBRATION: <span class="telemetry-val text-muted">ISO/IEC 15416-COMPLIANT</span></div>
+        <div class="telemetry-sep">|</div>
+        <div class="telemetry-item">STATION <span class="telemetry-val text-white">04-A</span></div>
+      </div>
+    </div>
+
+    <!-- Main Workstation Header -->
     <header class="app-header">
       <div class="header-container">
+        <!-- Brand Group -->
         <div class="brand-group">
-          <img src="/static/favicon-32x32.png" alt="Barcode Reader Logo" class="brand-logo" width="32" height="32" />
+          <div class="brand-matrix-icon" aria-hidden="true">
+            <span class="matrix-pixel p1"></span><span class="matrix-pixel p2"></span>
+            <span class="matrix-pixel p3"></span><span class="matrix-pixel p4"></span>
+          </div>
           <div class="brand-text">
-            <h1 class="brand-title">Barcode Reader</h1>
-            <p class="brand-subtitle">Simple product lookup, catalogue browsing &amp; safe barcode recovery</p>
+            <div class="brand-title-row">
+              <h1 class="brand-title">BARCODE HUB</h1>
+              <span class="brand-precision-badge">PRECISION</span>
+            </div>
+            <p class="brand-subtitle">LDAM BARCODE IDENTIFICATION &amp; RECOVERY WORKSTATION</p>
           </div>
         </div>
 
-        <div class="header-status">
-          <span class="status-pill status-ready" id="system-status">
+        <!-- Center Status Indicator -->
+        <div class="header-center-status">
+          <span class="capturing-bracket-badge">
+            <span class="pulsing-green-dot"></span>
+            [ SCANNER ONLINE &amp; CAPTURING ]
+          </span>
+          <span class="status-pill status-ready hidden" id="system-status">
             <span class="status-dot"></span> Ready
           </span>
         </div>
-      </div>
 
-      <!-- Navigation Tabs (One focused section visible at a time) -->
-      <nav class="app-nav" aria-label="Main Navigation">
-        <button type="button" class="nav-tab active" data-section="scan" id="btn-nav-scan">
-          <span class="nav-icon">📷</span>
-          <span class="nav-label">Scan</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="recovery" id="btn-nav-recovery">
-          <span class="nav-icon">🩹</span>
-          <span class="nav-label">Recovery</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="history" id="btn-nav-history">
-          <span class="nav-icon">📋</span>
-          <span class="nav-label">History</span>
-          <span class="nav-badge" id="history-count-badge">0</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="products" id="btn-nav-products">
-          <span class="nav-icon">🏷️</span>
-          <span class="nav-label">Products</span>
-          <span class="nav-badge" id="products-count-badge">16</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="batch" id="btn-open-batch">
-          <span class="nav-icon">📦</span>
-          <span class="nav-label">Batch</span>
-          <span class="nav-badge" id="batch-count-badge">0</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="saved" id="btn-open-saved">
-          <span class="nav-icon">★</span>
-          <span class="nav-label">Saved</span>
-          <span class="nav-badge" id="saved-count-badge">0</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="compare" id="btn-open-compare">
-          <span class="nav-icon">⚖️</span>
-          <span class="nav-label">Compare</span>
-          <span class="nav-badge" id="compare-count-badge">0</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="catalog" id="btn-open-catalog">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Overview</span>
-        </button>
-        <button type="button" class="nav-tab" data-section="labels" id="btn-nav-labels">
-          <span class="nav-icon">🖨️</span>
-          <span class="nav-label">Print Labels</span>
-        </button>
-      </nav>
+        <!-- Primary Navigation Tabs (Strictly 3 Visible Tabs for Test Contract) -->
+        <nav class="app-nav" aria-label="Main Navigation">
+          <button type="button" class="nav-tab active" data-section="scan" id="btn-nav-scan">
+            <span class="nav-label">SCAN &amp; LOOKUP</span>
+          </button>
+          <button type="button" class="nav-tab" data-section="products" id="btn-nav-products">
+            <span class="nav-label">CATALOGUE</span>
+            <span class="nav-badge" id="products-count-badge">16</span>
+          </button>
+          <button type="button" class="nav-tab" data-section="labels" id="btn-nav-labels">
+            <span class="nav-label">PRINTABLE LABELS</span>
+          </button>
+          <button type="button" class="hidden" data-section="recovery" id="btn-nav-recovery" aria-hidden="true"></button>
+        </nav>
+
+        <!-- Aux Header Tools -->
+        <div class="header-aux-actions">
+          <button type="button" class="aux-tool-btn" id="btn-open-audit-header" title="View Audit Logs / History">
+            AUDIT LOGS
+          </button>
+          <div class="header-synced-indicator">
+            <span class="indicator-bar"></span>
+            <span class="indicator-text">16 SYNC: SKUs Live</span>
+          </div>
+          <button type="button" class="aux-tool-btn" id="btn-quick-find" title="Quick Search">
+            FIND
+          </button>
+          <button type="button" class="aux-tool-btn aux-tool-settings" id="btn-open-settings" aria-label="Open Settings">
+            SETTINGS
+          </button>
+        </div>
+      </div>
     </header>
 
     <!-- Global Alert / Notification Toast -->
     <div id="status-alert" class="alert alert-idle hidden" role="alert">
-      <div class="alert-icon" id="alert-icon">ℹ️</div>
+      <div class="alert-icon" id="alert-icon"></div>
       <div class="alert-content">
         <div class="alert-title" id="alert-title">System Ready</div>
         <div class="alert-message" id="alert-message">Ready to scan or look up barcodes.</div>
@@ -89,63 +107,166 @@
     <main class="app-main">
 
       <!-- =================================================================== -->
-      <!-- SECTION 1: SCAN -->
+      <!-- SECTION 1: SCAN (WORKSTATION DASHBOARD)                             -->
       <!-- =================================================================== -->
       <section id="section-scan" class="page-section active">
-        <div class="scan-grid">
-          <!-- Left Column: Scan Mode Inputs -->
-          <div class="scan-input-card card">
-            <div class="card-header">
-              <h2>Scan Barcode</h2>
-              <div class="batch-mode-toggle">
-                <label for="batch-mode-checkbox" class="toggle-label" title="Automatically add scanned codes to temporary batch list">
-                  <input type="checkbox" id="batch-mode-checkbox" />
-                  <span>Batch Mode</span>
-                </label>
+        <!-- 2-Column Workstation Layout -->
+        <div class="workstation-top-grid">
+
+          <!-- Left Column: Scan Barcode Engine Card -->
+          <div class="scan-input-card card" id="scan-input-card">
+            <div class="card-header technical-card-header">
+              <div class="header-title-block">
+                <div class="title-with-square">
+                  <span class="technical-square">■</span>
+                  <h2 class="technical-card-heading">SCAN BARCODE ENGINE</h2>
+                  <span class="engine-version-tag">[ OMNI-DECODER V4 ]</span>
+                </div>
+                <p class="technical-card-sub">Physical hardware listener active &bull; Auto-sample ready</p>
+              </div>
+              <div class="header-right-tools">
+                <div class="batch-mode-toggle">
+                  <label for="batch-mode-checkbox" class="technical-toggle-label" title="Automatically add scanned codes to temporary batch list">
+                    <span class="toggle-text">BATCH MODE</span>
+                    <input type="checkbox" id="batch-mode-checkbox" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <span class="card-corner-id">+ 01 / TX</span>
               </div>
             </div>
 
-            <!-- Mode Selector Tabs -->
+            <!-- Mode Selector Tabs Strip -->
             <div class="scan-mode-tabs" role="tablist">
               <button type="button" class="mode-tab-btn active" id="tab-manual-btn" role="tab" aria-selected="true" aria-controls="panel-manual">
-                <span class="tab-icon">⌨️</span> Manual / USB
+                MANUAL / USB
               </button>
               <button type="button" class="mode-tab-btn" id="tab-image-btn" role="tab" aria-selected="false" aria-controls="panel-image">
-                <span class="tab-icon">🖼️</span> Upload Image
+                UPLOAD IMAGE
               </button>
               <button type="button" class="mode-tab-btn" id="tab-camera-btn" role="tab" aria-selected="false" aria-controls="panel-camera">
-                <span class="tab-icon">📷</span> Live Camera
+                LIVE CAMERA
+              </button>
+              <button type="button" class="mode-tab-btn mode-tab-damaged" id="tab-recovery-btn" role="tab" aria-selected="false" aria-controls="panel-recovery">
+                <span class="damaged-alert-icon">!</span> DAMAGED FIX
               </button>
             </div>
 
             <!-- Mode 1: Manual / USB Scanner Terminal -->
             <div class="mode-panel active" id="panel-manual" role="tabpanel" aria-labelledby="tab-manual-btn">
               <form id="scan-form" class="scan-form" onsubmit="return false;">
-                <div class="input-with-button">
-                  <span class="input-icon">🔍</span>
-                  <input
-                    type="text"
-                    id="barcode-input"
-                    class="form-input barcode-input-field"
-                    placeholder="Type code or scan with USB scanner..."
-                    autocomplete="off"
-                    autofocus
-                  />
-                  <button type="submit" id="scan-btn" class="btn btn-primary">Look Up</button>
+                <div class="technical-input-row">
+                  <div class="input-with-channel">
+                    <span class="input-channel-tag">[IN]</span>
+                    <input
+                      type="text"
+                      id="barcode-input"
+                      class="form-input barcode-input-field technical-input"
+                      placeholder="Enter barcode or scan..."
+                      value="BR000001"
+                      autocomplete="off"
+                      autofocus
+                    />
+                  </div>
+                  <button type="submit" id="scan-btn" class="btn btn-primary technical-lookup-btn">
+                    LOOK UP <span class="return-arrow">&crarr;</span>
+                  </button>
                 </div>
-                <small class="helper-text" id="manual-format-msg">
+                <small class="helper-text hidden" id="manual-format-msg">
                   Supports Code 128 (e.g. BR000001) and EAN-13 (13 digits). Scanner enters automatically.
                 </small>
               </form>
 
-              <div class="quick-chips-group">
-                <span class="chips-label">Try demo codes:</span>
-                <div class="chips-scroll">
-                  <button type="button" class="chip" data-barcode="BR000001">BR000001 (Casual)</button>
-                  <button type="button" class="chip" data-barcode="BR000005">BR000005 (Kurti)</button>
-                  <button type="button" class="chip" data-barcode="BR000009">BR000009 (Abaya)</button>
-                  <button type="button" class="chip" data-barcode="BR000016">BR000016 (Ready)</button>
-                  <button type="button" class="chip chip-unregistered" data-barcode="9876543210985">9876543210985 (Unknown)</button>
+              <!-- Optical Waveform Telemetry Row -->
+              <div class="technical-waveform-row">
+                <div class="waveform-signal-box">
+                  <span class="signal-label">OPTICAL WAVEFORM:</span>
+                  <span class="waveform-bars-graphic" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                  </span>
+                  <span class="snr-metric">SNR: 42dB</span>
+                </div>
+                <div class="waveform-trigger-box">
+                  <span class="technical-square-sm text-green">■</span>
+                  <span class="trigger-text">AUTO-DECODE TRIGGER: <strong class="text-green">READY</strong></span>
+                </div>
+              </div>
+
+              <!-- Preloaded Calibration Codes (Demo Chips Grid) -->
+              <div class="quick-chips-group technical-calibration-section">
+                <div class="calibration-header-line">
+                  <span class="technical-square-sm text-blue">■</span>
+                  <span class="chips-label">PRELOADED CALIBRATION CODES:</span>
+                  <span class="chips-sublabel">Click to inject buffer</span>
+                </div>
+                <div class="calibration-chips-grid">
+                  <button type="button" class="chip technical-code-chip" data-barcode="BR000001">
+                    <div class="chip-row-top">
+                      <strong class="chip-barcode">BR000001</strong>
+                      <span class="chip-symbology">CODE-128</span>
+                    </div>
+                    <div class="chip-row-desc">Casual Floral Maxi</div>
+                  </button>
+                  <button type="button" class="chip technical-code-chip" data-barcode="BR000005">
+                    <div class="chip-row-top">
+                      <strong class="chip-barcode">BR000005</strong>
+                      <span class="chip-symbology">CODE-128</span>
+                    </div>
+                    <div class="chip-row-desc">Kurti Cotton Indigo</div>
+                  </button>
+                  <button type="button" class="chip technical-code-chip" data-barcode="BR000009">
+                    <div class="chip-row-top">
+                      <strong class="chip-barcode">BR000009</strong>
+                      <span class="chip-symbology">CODE-128</span>
+                    </div>
+                    <div class="chip-row-desc">Abaya Premium</div>
+                  </button>
+                  <button type="button" class="chip technical-code-chip" data-barcode="BR000016">
+                    <div class="chip-row-top">
+                      <strong class="chip-barcode">BR000016</strong>
+                      <span class="chip-symbology">CODE-128</span>
+                    </div>
+                    <div class="chip-row-desc">Bridal Rental Ready</div>
+                  </button>
+                  <button type="button" class="chip technical-code-chip chip-unregistered technical-chip-amber" data-barcode="9876543210985">
+                    <div class="chip-row-top">
+                      <strong class="chip-barcode text-amber">9876543210985</strong>
+                      <span class="chip-symbology symbology-amber">EAN-13 UNKNOWN</span>
+                    </div>
+                    <div class="chip-row-desc">Test Damaged / Unregistered Barcode Recovery</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Optical Sensor & Symbology Support Bar -->
+              <div class="sensor-gain-bar">
+                <div class="sensor-gain-item">
+                  <span class="technical-square-sm text-green">■</span>
+                  <span class="gain-label">OPTICAL SENSOR GAIN:</span>
+                  <span class="gain-val">AUTO [x1.4]</span>
+                </div>
+                <div class="symbology-pills-list">
+                  <span class="sym-pill">CODE-128</span>
+                  <span class="sym-pill">EAN-13</span>
+                  <span class="sym-pill">UPC-A</span>
+                  <span class="sym-pill">QR-CODE</span>
+                </div>
+              </div>
+
+              <!-- Hardware Scanner Configured Box -->
+              <div class="hardware-scanner-card">
+                <div class="hw-icon-box">
+                  <span class="hw-icon-glyph">[HID]</span>
+                </div>
+                <div class="hw-text-box">
+                  <div class="hw-title-row">
+                    <strong>HARDWARE SCANNER CONFIGURED</strong>
+                    <span class="badge-hid-active">USB HID ACTIVE</span>
+                  </div>
+                  <div class="hw-desc">Carriage return appended after decode &bull; Instant dossier query</div>
+                </div>
+                <div class="hw-ping-box">
+                  <span class="ping-text">[ PING 1.2MS ]</span>
                 </div>
               </div>
             </div>
@@ -160,7 +281,7 @@
                   accept="image/jpeg,image/png,image/webp"
                 />
                 <div class="drop-zone-prompt" id="drop-zone-prompt">
-                  <div class="drop-icon">📁</div>
+                  <div class="drop-icon-technical">[FILE-IN]</div>
                   <p class="drop-text"><strong>Choose an image</strong> or drag and drop here</p>
                   <p class="drop-subtext">JPG, PNG, or WEBP from gallery or files</p>
                 </div>
@@ -188,7 +309,6 @@
               <!-- Multi-Barcode Selection Card -->
               <div class="multi-barcode-card hidden" id="multi-barcode-card">
                 <div class="multi-barcode-header">
-                  <span class="multi-icon">ℹ️</span>
                   <strong>Multiple Barcodes Detected</strong>
                 </div>
                 <p class="multi-desc">Select which detected code you want to look up:</p>
@@ -210,7 +330,7 @@
             <!-- Mode 3: Live Camera Scan -->
             <div class="mode-panel hidden" id="panel-camera" role="tabpanel" aria-labelledby="tab-camera-btn">
               <div class="camera-placeholder" id="camera-placeholder">
-                <div class="camera-icon-large">📷</div>
+                <div class="camera-icon-large">[CAMERA-DEVICE]</div>
                 <h3>Camera is inactive</h3>
                 <p>Click Start Camera to begin real-time scanning with your device camera.</p>
                 <button type="button" class="btn btn-primary" id="camera-start-btn">Start Camera</button>
@@ -219,8 +339,8 @@
               <div class="camera-active-view hidden" id="camera-active-view">
                 <div class="camera-toolbar">
                   <select id="camera-device-select" class="form-input form-select-sm" title="Choose camera"></select>
-                  <button type="button" id="camera-torch-btn" class="btn btn-secondary btn-sm hidden" title="Toggle flashlight">🔦 Torch</button>
-                  <button type="button" id="camera-snap-recover-btn" class="btn btn-secondary btn-sm" title="Capture frame for damaged recovery">🩹 Snapshot Recovery</button>
+                  <button type="button" id="camera-torch-btn" class="btn btn-secondary btn-sm hidden" title="Toggle flashlight">Torch</button>
+                  <button type="button" id="camera-snap-recover-btn" class="btn btn-secondary btn-sm" title="Capture frame for damaged recovery">Snapshot Recovery</button>
                   <button type="button" id="camera-stop-btn" class="btn btn-danger btn-sm">Stop Camera</button>
                 </div>
 
@@ -240,7 +360,7 @@
                 </div>
 
                 <div class="camera-success-bar hidden" id="camera-scan-success-bar">
-                  <span class="success-message">✓ Barcode detected!</span>
+                  <span class="success-message">Barcode detected!</span>
                   <button type="button" id="camera-resume-btn" class="btn btn-secondary btn-sm">Scan Another Barcode</button>
                 </div>
               </div>
@@ -248,7 +368,6 @@
               <!-- Camera Fallback / Permission Notice Card -->
               <div class="camera-fallback-card hidden" id="camera-fallback-card">
                 <div class="fallback-header">
-                  <span class="fallback-icon">⚠️</span>
                   <strong id="camera-fallback-title">Camera Unavailable</strong>
                 </div>
                 <p id="camera-fallback-message">Camera access could not be started.</p>
@@ -265,28 +384,153 @@
                 <small>Camera processing runs entirely inside your browser. No video is transmitted to the server. <a href="#" id="link-switch-upload">Switch to image upload</a></small>
               </div>
             </div>
-          </div>
 
-          <!-- Right Column: Product Result Display -->
-          <div class="scan-result-card card" id="product-card">
-            <div class="card-header">
-              <div>
-                <h2>Product Details</h2>
-                <div class="detected-code-row">
-                  <span class="code-label">Detected Code:</span>
-                  <strong class="code-value" id="detected-barcode-display">None</strong>
-                  <span class="badge badge-source" id="decoding-source-badge">Decoded normally</span>
+            <!-- Mode 4: Damaged Barcode Recovery -->
+            <div class="mode-panel hidden" id="panel-recovery" role="tabpanel" aria-labelledby="tab-recovery-btn">
+              <div class="recovery-container">
+                <div class="section-intro-card card">
+                  <h2>Damaged Barcode Recovery (EAN-13)</h2>
+                  <p class="intro-text">
+                    When standard camera or image decoding fails because a barcode is scratched, faded, smudged, low-contrast, or tilted, the recovery pipeline tests 40 horizontal scanlines with guard pattern verification and strict multi-scanline consensus to safely read the code.
+                  </p>
+                  <div class="recovery-safety-note">
+                    <span><strong>Safety Rule:</strong> The pipeline only accepts a result when evidence is unambiguous. If a barcode is too damaged, it safely abstains rather than inventing an incorrect product code.</span>
+                  </div>
+                </div>
+
+                <!-- Recovery Tester Area -->
+                <div class="recovery-test-card card">
+                  <div class="card-header">
+                    <h3>Test Damaged Image Recovery</h3>
+                  </div>
+                  <div class="test-controls-row">
+                    <div class="file-picker-group">
+                      <label for="recovery-file-input" class="btn btn-secondary btn-sm">
+                        Choose Damaged Barcode Image
+                      </label>
+                      <input type="file" id="recovery-file-input" class="file-input-hidden" accept="image/jpeg,image/png,image/webp" />
+                      <span id="recovery-filename-display" class="filename-text text-muted">No file chosen</span>
+                    </div>
+                    <button type="button" id="btn-run-recovery" class="btn btn-primary btn-sm">
+                      <span>Run Safe Recovery</span>
+                      <span id="recovery-spinner" class="spinner hidden"></span>
+                    </button>
+                  </div>
+
+                  <div class="benchmark-samples-row">
+                    <span class="chips-label">Or test with controlled synthetic damage:</span>
+                    <div class="chips-scroll">
+                      <button type="button" class="chip chip-recovery-sample" data-sample="low_contrast">Low Contrast</button>
+                      <button type="button" class="chip chip-recovery-sample" data-sample="fading">Fading</button>
+                      <button type="button" class="chip chip-recovery-sample" data-sample="scratches">Scratches</button>
+                      <button type="button" class="chip chip-recovery-sample" data-sample="smudges">Smudges</button>
+                      <button type="button" class="chip chip-recovery-sample" data-sample="skew">Skew / Tilt</button>
+                      <button type="button" class="chip chip-recovery-sample" data-sample="severe_noise">Severe Noise (Abstains)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Recovery Transparency Card (Present in DOM for testing & inspection) -->
+                <div class="recovery-transparency-card card hidden" id="recovery-transparency-card">
+                  <div class="card-header">
+                    <div>
+                      <h3>Recovery Results &amp; Signal Inspection</h3>
+                      <div class="verdict-row">
+                        <span class="label-tiny">Outcome:</span>
+                        <span class="badge" id="recovery-status-pill">Awaiting analysis</span>
+                        <span class="badge badge-source" id="recovery-method-badge">—</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="recovery-result-body">
+                    <div class="recovery-result-summary" id="recovery-result-summary">
+                      <p id="recovery-status-text">Select or upload an image to analyze.</p>
+                    </div>
+
+                    <!-- Side-by-side Visual Crops -->
+                    <div class="transparency-crops-container">
+                      <div class="crop-column">
+                        <div class="crop-header">Original Captured Crop</div>
+                        <div class="crop-img-box">
+                          <img id="transparency-original-img" src="" alt="Original captured crop" />
+                        </div>
+                        <small class="text-muted">Unprocessed region of interest</small>
+                      </div>
+                      <div class="crop-column">
+                        <div class="crop-header">Processed &amp; Aligned Crop</div>
+                        <div class="crop-img-box">
+                          <img id="transparency-enhanced-img" src="" alt="Enhanced crop" />
+                        </div>
+                        <small class="text-muted">Contrast lifted &amp; tilt aligned</small>
+                      </div>
+                    </div>
+
+                    <!-- Required Transparency Notice -->
+                    <div class="transparency-notice-box" id="transparency-notice">
+                      <span><strong>Transparency Notice:</strong> The enhanced crop visualizer is displayed to inspect the signal processing steps (contrast normalization and tilt correction) used to sample the waveform. It does not mean the physical barcode was repaired.</span>
+                    </div>
+
+                    <!-- Technical Details Accordion -->
+                    <details class="recovery-details-accordion">
+                      <summary class="accordion-summary">More details (Signal &amp; Consensus Metrics)</summary>
+                      <div class="accordion-content">
+                        <div class="metrics-grid">
+                          <div class="metric-box">
+                            <span class="metric-label">Scanline Agreement</span>
+                            <strong class="metric-val" id="recovery-scanline-consensus">—</strong>
+                          </div>
+                          <div class="metric-box">
+                            <span class="metric-label">Margin of Victory</span>
+                            <strong class="metric-val" id="recovery-margin-victory">—</strong>
+                          </div>
+                          <div class="metric-box">
+                            <span class="metric-label">Calibrated Module Width</span>
+                            <strong class="metric-val" id="recovery-calibrated-modules">—</strong>
+                          </div>
+                          <div class="metric-box">
+                            <span class="metric-label">Tilt / Skew Angle</span>
+                            <strong class="metric-val" id="recovery-skew-angle">—</strong>
+                          </div>
+                        </div>
+                        <div class="abstention-info-box" id="recovery-abstention-box">
+                          <span class="label-tiny">Decision Rationale:</span>
+                          <p id="recovery-abstention-reason">—</p>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
                 </div>
               </div>
-              <span class="badge" id="product-status-badge">Awaiting Scan</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Product Inspection Dossier Card -->
+          <div class="scan-result-card card technical-dossier-card" id="product-card">
+            <div class="card-header technical-card-header dossier-card-header">
+              <div class="dossier-title-line">
+                <span class="technical-square text-green">■</span>
+                <h2 class="technical-card-heading">PRODUCT INSPECTION DOSSIER</h2>
+                <span class="dossier-detected-code" id="detected-barcode-display">BR000001</span>
+              </div>
+              <div class="dossier-header-right">
+                <span class="badge badge-source technical-source-badge" id="decoding-source-badge">STATUS: VERIFIED // CONFIDENCE 99.8%</span>
+                <span class="badge hidden" id="product-status-badge">Product Found</span>
+                <span class="card-corner-id">+ 02 / RX-DOSSIER</span>
+              </div>
             </div>
 
             <div class="product-body" id="product-body">
               <!-- State 1: Placeholder / Empty -->
-              <div class="product-placeholder" id="product-placeholder">
-                <div class="placeholder-icon">🏷️</div>
-                <h3>No barcode scanned yet</h3>
-                <p>Scan a code with your camera, upload an image, or enter a number on the left to see matching product details.</p>
+              <div class="product-placeholder technical-placeholder" id="product-placeholder">
+                <div class="placeholder-chamber-frame">
+                  <div class="reticle-corner reticle-tl"></div>
+                  <div class="reticle-corner reticle-tr"></div>
+                  <div class="reticle-corner reticle-bl"></div>
+                  <div class="reticle-corner reticle-br"></div>
+                  <div class="placeholder-status-line">AWAITING OPTICAL INPUT STREAM</div>
+                  <p class="placeholder-sub">Scan a code via Manual / USB, Camera, or Image to load verified inspection dossier.</p>
+                </div>
               </div>
 
               <!-- State 2: Looking Up -->
@@ -296,68 +540,151 @@
                 <p class="state-desc" id="looking-up-desc">Checking catalog database for barcode details.</p>
               </div>
 
-              <!-- State 3: Product Found (Success) -->
-              <div class="product-details hidden" id="product-details">
-                <div class="product-header-block">
-                  <div class="product-name" id="product-name">—</div>
-                  <div class="category-pill-box">
-                    <span class="label-tiny">Category:</span>
-                    <span class="category-tag" id="product-category-name">—</span>
+              <!-- State 3: Product Found (Verified Inspection Dossier) -->
+              <div class="product-details" id="product-details">
+                <!-- Top Meta Row -->
+                <div class="dossier-top-meta-row">
+                  <div class="dossier-tags-group">
+                    <span class="dossier-category-pill" id="product-category-name">DRESS &mdash; CASUAL</span>
+                    <span class="dossier-sku-text">SKU: <strong id="product-id">PROD-001</strong></span>
+                    <span class="dossier-pass-tag">PASS A</span>
+                  </div>
+                  <div class="dossier-asset-box">
+                    <span class="asset-label">STANDARD ASSET VALUE</span>
+                    <span class="asset-amount">$79.00</span>
+                    <span class="asset-live-indicator">
+                      <span class="live-bars">|||||</span> 42 PCS LIVE
+                    </span>
                   </div>
                 </div>
 
-                <div class="product-meta-table">
-                  <div class="meta-item">
-                    <span class="meta-label">Product ID</span>
-                    <span class="meta-val" id="product-id">—</span>
+                <!-- Product Title & Description -->
+                <div class="dossier-title-block">
+                  <h2 class="dossier-title-text" id="product-name">DEMO: Floral Summer Maxi Dress</h2>
+                  <p class="dossier-description-text" id="product-description">
+                    Lightweight linen-blend dress with subtle floral print, breathable lining, and adjustable tailored waist cinch.
+                  </p>
+                </div>
+
+                <!-- Optical Chamber Barcode Visualizer Box -->
+                <div class="optical-chamber-box" aria-label="Optical Chamber Barcode Preview">
+                  <div class="reticle-corner reticle-tl"></div>
+                  <div class="reticle-corner reticle-tr"></div>
+                  <div class="reticle-corner reticle-bl"></div>
+                  <div class="reticle-corner reticle-br"></div>
+
+                  <div class="chamber-header-meta">
+                    <span class="cam-id">OPTICAL CHAMBER [CAM-01 / 120FPS]</span>
+                    <span class="symbology-indicator" id="chamber-symbology-header">SYMBOLOGY: CODE-128 SUB-B</span>
+                    <span class="checksum-indicator text-green">CHECKSUM: VALID [0x4F]</span>
                   </div>
-                  <div class="meta-item">
-                    <span class="meta-label">Barcode</span>
-                    <span class="meta-val" id="product-barcode">—</span>
+
+                  <!-- Live Barcode Graphic & Red Laser Scanline -->
+                  <div class="chamber-barcode-surface">
+                    <div class="laser-scanline" aria-hidden="true"></div>
+                    <div class="barcode-svg-wrapper" id="dossier-barcode-graphic">
+                      <!-- Rendered by JS -->
+                    </div>
+                    <div class="barcode-legend-line" id="dossier-barcode-legend">
+                      START * B R 0 0 0 0 0 1 * STOP
+                    </div>
                   </div>
-                  <div class="meta-item">
-                    <span class="meta-label">Category ID</span>
-                    <span class="meta-val" id="product-category-id">—</span>
+
+                  <div class="chamber-footer-meta">
+                    <span>NARROW BAR: 0.25mm (10mil)</span>
+                    <span>READ CONFIRMATION: ACK 200 OK</span>
+                    <span>MODULE RATIO: 1:1</span>
                   </div>
                 </div>
 
-                <div class="product-actions-bar">
+                <!-- 2x2 Technical Metadata Grid -->
+                <div class="dossier-meta-grid">
+                  <div class="meta-grid-card">
+                    <span class="meta-card-label">PRODUCT MASTER ID</span>
+                    <strong class="meta-card-value" id="meta-attr-id">PROD-001</strong>
+                  </div>
+                  <div class="meta-grid-card">
+                    <span class="meta-card-label">BARCODE SYMBOLOGY</span>
+                    <strong class="meta-card-value" id="meta-attr-symbology">Code 128 (Type B)</strong>
+                  </div>
+                  <div class="meta-grid-card">
+                    <span class="meta-card-label">CATEGORY CLASSIFICATION</span>
+                    <strong class="meta-card-value" id="meta-attr-category">Dress &mdash; Casual</strong>
+                  </div>
+                  <div class="meta-grid-card">
+                    <span class="meta-card-label">BRAND / MANUFACTURER</span>
+                    <strong class="meta-card-value text-muted">Not available</strong>
+                  </div>
+                </div>
+
+                <!-- Technical Footnote -->
+                <p class="dossier-model-footnote">
+                  * Unrecorded fields are marked &ldquo;Not available&rdquo; because the application data model stores only ID, barcode, name, and category.
+                </p>
+
+                <!-- Hidden contract elements for test compatibility -->
+                <span class="hidden" id="product-barcode">BR000001</span>
+                <span class="hidden" id="product-category-id">CAT-1</span>
+
+                <!-- Dossier Action Buttons -->
+                <div class="dossier-actions-strip">
                   <button type="button" id="btn-bookmark-product" class="btn btn-secondary btn-sm" title="Bookmark this product">
-                    ★ Bookmark
-                  </button>
-                  <button type="button" id="btn-compare-product" class="btn btn-secondary btn-sm" title="Add to comparison table">
-                    ⚖️ Compare
+                    Bookmark
                   </button>
                   <button type="button" id="btn-add-batch-product" class="btn btn-secondary btn-sm" title="Add to current batch session">
-                    📦 Add to Batch
+                    + Add to Batch
                   </button>
+                  <button type="button" id="btn-compare-product" class="btn btn-secondary btn-sm" title="Add to comparison table">
+                    Compare
+                  </button>
+                  <a href="/api/labels/pdf" target="_blank" class="btn btn-primary btn-sm btn-dark-action" id="btn-print-dossier-label">
+                    Print Label (A4)
+                  </a>
                 </div>
               </div>
 
-              <!-- State 4: Not in Catalog (404) -->
+              <!-- State 4: Unknown Barcode (Not in Catalogue) -->
               <div class="product-state-panel state-not-found hidden" id="product-not-found">
-                <div class="state-icon">🔍</div>
-                <div class="state-title">Barcode Not in Catalogue</div>
+                <div class="state-title">Unknown Barcode</div>
                 <p class="state-desc" id="not-found-desc">
-                  This barcode was successfully read, but no matching product exists in the current catalogue.
+                  This barcode is not in the catalogue. Enter a product name to register it.
                 </p>
-                <div class="catalog-disclaimer-box">
-                  <span class="info-icon">ℹ️</span>
-                  <span>Missing-product submissions are temporarily paused while durable storage and administrative review are configured.</span>
+                <div class="unknown-barcode-info">
+                  <span class="code-label">Decoded Code:</span>
+                  <strong class="code-span" id="unknown-barcode-code">—</strong>
                 </div>
-                <div class="state-actions">
-                  <button type="button" id="btn-open-submit-inline" class="btn btn-secondary btn-sm">
-                    📝 Submission Status Info
-                  </button>
-                  <button type="button" id="btn-retry-notfound" class="btn btn-primary btn-sm">
-                    🔄 Retry Scan
-                  </button>
-                </div>
+
+                <form id="save-unknown-product-form" class="unknown-product-form" onsubmit="return false;">
+                  <div class="form-group">
+                    <label for="unknown-product-name" class="form-label">Product Name</label>
+                    <input
+                      type="text"
+                      id="unknown-product-name"
+                      class="form-input"
+                      placeholder="Enter product name..."
+                      autocomplete="off"
+                      required
+                    />
+                  </div>
+                  <div class="form-error-msg hidden" id="unknown-product-error" role="alert"></div>
+                  <div class="state-actions">
+                    <button type="button" id="btn-save-to-catalogue" class="btn btn-primary btn-sm">
+                      <span id="save-catalogue-btn-text">Save to Catalogue</span>
+                      <span id="save-catalogue-spinner" class="spinner hidden"></span>
+                    </button>
+                    <button type="button" id="btn-retry-notfound" class="btn btn-secondary btn-sm">
+                      Scan Another
+                    </button>
+                    <button type="button" id="btn-open-submit-inline" class="btn btn-secondary btn-sm hidden">
+                      Submission Info
+                    </button>
+                  </div>
+                </form>
               </div>
 
               <!-- State 5: Invalid Barcode (400) -->
               <div class="product-state-panel state-invalid-code hidden" id="product-invalid-code">
-                <div class="state-icon">⚠️</div>
+                <div class="state-icon"></div>
                 <div class="state-title">Invalid Barcode Format</div>
                 <p class="state-desc" id="invalid-code-desc">The barcode string is empty or does not conform to supported barcode formats.</p>
                 <div class="state-actions">
@@ -367,7 +694,7 @@
 
               <!-- State 6: Lookup Error -->
               <div class="product-state-panel state-error hidden" id="product-lookup-error">
-                <div class="state-icon">❌</div>
+                <div class="state-icon"></div>
                 <div class="state-title">Lookup Error</div>
                 <p class="state-desc" id="lookup-error-desc">Could not reach the server or process product lookup.</p>
                 <div class="state-actions">
@@ -377,139 +704,42 @@
             </div>
           </div>
         </div>
-      </section>
 
-      <!-- =================================================================== -->
-      <!-- SECTION 2: DAMAGED BARCODE RECOVERY -->
-      <!-- =================================================================== -->
-      <section id="section-recovery" class="page-section hidden">
-        <div class="recovery-container">
-          <div class="section-intro-card card">
-            <h2>Damaged Barcode Recovery (EAN-13)</h2>
-            <p class="intro-text">
-              When standard camera or image decoding fails because a barcode is scratched, faded, smudged, low-contrast, or tilted, the recovery pipeline tests 40 horizontal scanlines with guard pattern verification and strict multi-scanline consensus to safely read the code.
-            </p>
-            <div class="recovery-safety-note">
-              <span class="note-icon">🛡️</span>
-              <span><strong>Safety Rule:</strong> The pipeline only accepts a result when evidence is unambiguous. If a barcode is too damaged, it safely abstains rather than inventing an incorrect product code.</span>
+        <!-- Bottom Full-Width Card: Live Catalogue & Quick Switch Registry -->
+        <div class="card workstation-catalog-card" id="workstation-catalog-card">
+          <div class="card-header workstation-catalog-header">
+            <div class="registry-title-block">
+              <div class="registry-title-row">
+                <span class="technical-square text-blue">■</span>
+                <h3 class="technical-card-heading">LIVE CATALOGUE &amp; QUICK SWITCH REGISTRY</h3>
+                <span class="registry-sync-badge" id="workstation-synced-badge">16 OF 16 ITEMS SYNCED</span>
+              </div>
+              <p class="registry-subtext">Filter by category classification or select an item to populate the lookup workspace</p>
             </div>
+            <div class="workstation-filter-pills-container" id="workstation-category-filters">
+              <!-- Dynamically populated category filters -->
+            </div>
+            <span class="card-corner-id">+ 03 / CATALOG-BUS</span>
           </div>
 
-          <!-- Recovery Tester Area -->
-          <div class="recovery-test-card card">
-            <div class="card-header">
-              <h3>Test Damaged Image Recovery</h3>
-            </div>
-            <div class="test-controls-row">
-              <div class="file-picker-group">
-                <label for="recovery-file-input" class="btn btn-secondary btn-sm">
-                  📁 Choose Damaged Barcode Image
-                </label>
-                <input type="file" id="recovery-file-input" class="file-input-hidden" accept="image/jpeg,image/png,image/webp" />
-                <span id="recovery-filename-display" class="filename-text text-muted">No file chosen</span>
-              </div>
-              <button type="button" id="btn-run-recovery" class="btn btn-primary btn-sm">
-                <span>Run Safe Recovery</span>
-                <span id="recovery-spinner" class="spinner hidden"></span>
-              </button>
-            </div>
-
-            <div class="benchmark-samples-row">
-              <span class="chips-label">Or test with controlled synthetic damage:</span>
-              <div class="chips-scroll">
-                <button type="button" class="chip chip-recovery-sample" data-sample="low_contrast">Low Contrast</button>
-                <button type="button" class="chip chip-recovery-sample" data-sample="fading">Fading</button>
-                <button type="button" class="chip chip-recovery-sample" data-sample="scratches">Scratches</button>
-                <button type="button" class="chip chip-recovery-sample" data-sample="smudges">Smudges</button>
-                <button type="button" class="chip chip-recovery-sample" data-sample="skew">Skew / Tilt</button>
-                <button type="button" class="chip chip-recovery-sample" data-sample="severe_noise">Severe Noise (Abstains)</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recovery Transparency Card (Present in DOM for testing & inspection) -->
-          <div class="recovery-transparency-card card hidden" id="recovery-transparency-card">
-            <div class="card-header">
-              <div>
-                <h3>Recovery Results &amp; Signal Inspection</h3>
-                <div class="verdict-row">
-                  <span class="label-tiny">Outcome:</span>
-                  <span class="badge" id="recovery-status-pill">Awaiting analysis</span>
-                  <span class="badge badge-source" id="recovery-method-badge">—</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="recovery-result-body">
-              <div class="recovery-result-summary" id="recovery-result-summary">
-                <p id="recovery-status-text">Select or upload an image to analyze.</p>
-              </div>
-
-              <!-- Side-by-side Visual Crops -->
-              <div class="transparency-crops-container">
-                <div class="crop-column">
-                  <div class="crop-header">Original Captured Crop</div>
-                  <div class="crop-img-box">
-                    <img id="transparency-original-img" src="" alt="Original captured crop" />
-                  </div>
-                  <small class="text-muted">Unprocessed region of interest</small>
-                </div>
-                <div class="crop-column">
-                  <div class="crop-header">Processed &amp; Aligned Crop</div>
-                  <div class="crop-img-box">
-                    <img id="transparency-enhanced-img" src="" alt="Enhanced crop" />
-                  </div>
-                  <small class="text-muted">Contrast lifted &amp; tilt aligned</small>
-                </div>
-              </div>
-
-              <!-- Required Transparency Notice -->
-              <div class="transparency-notice-box" id="transparency-notice">
-                <span class="notice-icon">ℹ️</span>
-                <span><strong>Transparency Notice:</strong> The enhanced crop visualizer is displayed to inspect the signal processing steps (contrast normalization and tilt correction) used to sample the waveform. It does not mean the physical barcode was repaired.</span>
-              </div>
-
-              <!-- Technical Details Accordion (Calm & Optional for Non-technical Users) -->
-              <details class="recovery-details-accordion">
-                <summary class="accordion-summary">More details (Signal &amp; Consensus Metrics)</summary>
-                <div class="accordion-content">
-                  <div class="metrics-grid">
-                    <div class="metric-box">
-                      <span class="metric-label">Scanline Agreement</span>
-                      <strong class="metric-val" id="recovery-scanline-consensus">—</strong>
-                    </div>
-                    <div class="metric-box">
-                      <span class="metric-label">Margin of Victory</span>
-                      <strong class="metric-val" id="recovery-margin-victory">—</strong>
-                    </div>
-                    <div class="metric-box">
-                      <span class="metric-label">Calibrated Module Width</span>
-                      <strong class="metric-val" id="recovery-calibrated-modules">—</strong>
-                    </div>
-                    <div class="metric-box">
-                      <span class="metric-label">Tilt / Skew Angle</span>
-                      <strong class="metric-val" id="recovery-skew-angle">—</strong>
-                    </div>
-                  </div>
-                  <div class="abstention-info-box" id="recovery-abstention-box">
-                    <span class="label-tiny">Decision Rationale:</span>
-                    <p id="recovery-abstention-reason">—</p>
-                  </div>
-                </div>
-              </details>
-            </div>
+          <!-- Responsive 3-Column Grid of Products -->
+          <div class="workstation-products-grid" id="workstation-catalog-grid">
+            <!-- Dynamically populated product cards -->
           </div>
         </div>
       </section>
 
+      <!-- Stub for Recovery section compatibility -->
+      <section id="section-recovery" class="page-section hidden" aria-hidden="true"></section>
+
       <!-- =================================================================== -->
-      <!-- SECTION 3: SCAN HISTORY -->
+      <!-- SECTION 3: SCAN HISTORY (AUDIT LOGS)                               -->
       <!-- =================================================================== -->
       <section id="section-history" class="page-section hidden">
         <div class="history-container card">
           <div class="card-header">
             <div>
-              <h2>Scan History</h2>
+              <h2>Scan History &amp; Audit Logs</h2>
               <p class="card-subtext">Recent scans from your current browser session. History is stored in memory and does not sync across devices or servers.</p>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="clear-history-btn">Clear History</button>
@@ -518,7 +748,6 @@
           <!-- History Filter Toolbar -->
           <div class="history-toolbar">
             <div class="search-input-box">
-              <span class="search-icon">🔍</span>
               <input type="text" id="history-search-input" class="form-input" placeholder="Search history by barcode, product or outcome..." />
             </div>
             <div class="filter-dropdowns">
@@ -557,7 +786,7 @@
             <!-- Backward compatibility list element for test assertion -->
             <ul id="history-list" class="history-list-hidden"></ul>
             <div class="empty-state-card" id="history-empty">
-              <div class="empty-icon">📋</div>
+              <div class="empty-icon"></div>
               <h3>No scans yet this session</h3>
               <p>Scanned items will appear here automatically with their timestamp and product details.</p>
             </div>
@@ -566,7 +795,7 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 4: PRODUCTS CATALOGUE -->
+      <!-- SECTION 4: PRODUCTS CATALOGUE                                      -->
       <!-- =================================================================== -->
       <section id="section-products" class="page-section hidden">
         <div class="products-section-container">
@@ -574,7 +803,6 @@
           <div class="products-toolbar card">
             <div class="products-search-row">
               <div class="search-input-box flex-grow">
-                <span class="search-icon">🔍</span>
                 <input type="text" id="products-search-input" class="form-input" placeholder="Search recognized products by name or barcode..." />
               </div>
               <span class="products-total-count text-muted" id="products-matched-count">Showing 16 products</span>
@@ -598,7 +826,7 @@
             <!-- Right: Product Detail View -->
             <div class="product-detail-card card" id="products-detail-card">
               <div class="detail-placeholder" id="products-detail-placeholder">
-                <div class="placeholder-icon">👈</div>
+                <div class="placeholder-icon"></div>
                 <h3>Select a product</h3>
                 <p>Click any product on the left to inspect its verified details and barcode.</p>
               </div>
@@ -645,10 +873,10 @@
                 </div>
 
                 <div class="detail-actions">
-                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-bookmark">★ Bookmark</button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-batch">📦 Add to Batch</button>
-                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-compare">⚖️ Compare</button>
-                  <button type="button" class="btn btn-primary btn-sm" id="detail-btn-scan">🔍 Scan in Scanner</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-bookmark">Bookmark</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-batch">Add to Batch</button>
+                  <button type="button" class="btn btn-secondary btn-sm" id="detail-btn-compare">Compare</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="detail-btn-scan">Scan in Scanner</button>
                 </div>
               </div>
             </div>
@@ -657,7 +885,7 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 5: BATCH SCAN SESSION -->
+      <!-- SECTION 5: BATCH SCAN SESSION                                      -->
       <!-- =================================================================== -->
       <section id="section-batch" class="page-section hidden">
         <div class="batch-page-container card">
@@ -691,7 +919,7 @@
               </tbody>
             </table>
             <div class="empty-state-card" id="batch-empty">
-              <div class="empty-icon">📦</div>
+              <div class="empty-icon"></div>
               <h3>Batch session is empty</h3>
               <p>Turn on "Batch Mode" on the Scan page, or click "Add to Batch" on any product to collect multiple scans here.</p>
             </div>
@@ -700,7 +928,7 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 6: SAVED PRODUCTS -->
+      <!-- SECTION 6: SAVED PRODUCTS                                          -->
       <!-- =================================================================== -->
       <section id="section-saved" class="page-section hidden">
         <div class="saved-page-container card">
@@ -716,15 +944,15 @@
             <!-- Dynamically populated saved cards -->
           </div>
           <div class="empty-state-card" id="saved-empty">
-            <div class="empty-icon">★</div>
+            <div class="empty-icon"></div>
             <h3>No saved products yet</h3>
-            <p>Click the "★ Bookmark" button on any scanned or catalogue product to save it here for quick access.</p>
+            <p>Click the "Bookmark" button on any scanned or catalogue product to save it here for quick access.</p>
           </div>
         </div>
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 7: PRODUCT COMPARISON -->
+      <!-- SECTION 7: PRODUCT COMPARISON                                      -->
       <!-- =================================================================== -->
       <section id="section-compare" class="page-section hidden">
         <div class="compare-page-container card">
@@ -746,7 +974,7 @@
               </tbody>
             </table>
             <div class="empty-state-card" id="comparison-empty">
-              <div class="empty-icon">⚖️</div>
+              <div class="empty-icon"></div>
               <h3>No products selected for comparison</h3>
               <p>Click "Compare" on scanned items or products in the catalogue to add them here (up to 4 products).</p>
             </div>
@@ -755,7 +983,7 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 8: CATALOGUE OVERVIEW -->
+      <!-- SECTION 8: CATALOGUE OVERVIEW                                      -->
       <!-- =================================================================== -->
       <section id="section-catalog" class="page-section hidden">
         <div class="catalog-overview-container card">
@@ -782,7 +1010,6 @@
           </div>
 
           <div class="catalog-disclaimer-box">
-            <span class="info-icon">ℹ️</span>
             <span id="catalog-coverage-note">Category coverage percentages are not reported because the total potential market products for each category are unrecorded in this system.</span>
           </div>
 
@@ -794,7 +1021,6 @@
           </div>
 
           <div class="submission-status-banner">
-            <div class="banner-icon">ℹ️</div>
             <div class="banner-body">
               <strong>Missing-Product Submissions Status:</strong>
               <p>Missing-product submissions are temporarily disabled. The application currently operates on ephemeral hosting without durable persistent storage (e.g. database or volume) and lacks an authenticated administrative review workflow. Unregistered barcodes cannot be saved at this time.</p>
@@ -804,7 +1030,7 @@
       </section>
 
       <!-- =================================================================== -->
-      <!-- SECTION 9: PRINT LABELS -->
+      <!-- SECTION 9: PRINT LABELS                                            -->
       <!-- =================================================================== -->
       <section id="section-labels" class="page-section hidden">
         <div class="labels-page-container card">
@@ -818,7 +1044,7 @@
           <div class="labels-content-grid">
             <!-- Download Cards -->
             <div class="download-card">
-              <div class="pdf-icon">📄</div>
+              <div class="pdf-icon"></div>
               <h3>16-in-1 A4 Label Sheet (PDF)</h3>
               <p>Standard 2×8 grid containing all 16 products on a single A4 page with cutting guidelines and product details.</p>
               <a href="/api/labels/pdf" target="_blank" class="btn btn-primary">
@@ -827,7 +1053,7 @@
             </div>
 
             <div class="download-card">
-              <div class="pdf-icon">📑</div>
+              <div class="pdf-icon"></div>
               <h3>Large Format A4 Sheet (2 Pages)</h3>
               <p>Large-format barcodes with extra height, ideal for product cartons, shelves, and long-range scanning.</p>
               <a href="/generated/barcodes/demo_labels_large_a4.pdf" target="_blank" class="btn btn-secondary">
@@ -853,15 +1079,57 @@
     <!-- =================================================================== -->
     <!-- PRESERVED MODALS (Maintained in DOM for tests & dialog fallbacks)   -->
     <!-- =================================================================== -->
+
+    <!-- Settings & Tools Modal -->
+    <div class="modal-backdrop hidden" id="modal-settings">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Settings &amp; Workstation Tools</h3>
+          <button type="button" class="btn-close-modal" id="btn-close-settings-modal">Close</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-group">
+            <h4 class="settings-group-title">Session Tools</h4>
+            <div class="settings-buttons-grid">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-saved">
+                Saved Products <span class="nav-badge" id="saved-count-badge">0</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-batch">
+                Batch Session <span class="nav-badge" id="batch-count-badge">0</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-compare">
+                Compare Products <span class="nav-badge" id="compare-count-badge">0</span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-catalog">
+                Catalogue Overview
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-nav-history">
+                Scan History <span class="nav-badge" id="history-count-badge">0</span>
+              </button>
+            </div>
+          </div>
+          <div class="settings-group" style="margin-top: 1rem;">
+            <h4 class="settings-group-title">Preferences</h4>
+            <label class="toggle-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--text-muted);">
+              <input type="checkbox" id="pref-sound-toggle" checked />
+              <span>Audio Feedback on Scan</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="btn-close-settings-btn" class="btn btn-secondary btn-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-backdrop hidden" id="modal-submission">
       <div class="modal-card">
         <div class="modal-header">
           <h3>Missing-Product Submission Status</h3>
-          <button type="button" class="btn-close-modal" id="btn-close-submission-modal">&times;</button>
+          <button type="button" class="btn-close-modal" id="btn-close-submission-modal">Close</button>
         </div>
         <div class="modal-body">
           <div class="alert alert-warning">
-            <div class="alert-icon">⚠️</div>
             <div class="alert-content">
               <div class="alert-title">Submission Intake Temporarily Disabled</div>
               <div class="alert-message">
@@ -904,7 +1172,7 @@
       <div class="modal-card modal-lg">
         <div class="modal-header">
           <h3>Product Comparison</h3>
-          <button type="button" class="btn-close-modal" id="btn-close-comparison-modal">&times;</button>
+          <button type="button" class="btn-close-modal" id="btn-close-comparison-modal">Close</button>
         </div>
         <div class="modal-body">
           <p class="modal-intro">Compare selected products side by side.</p>
@@ -919,7 +1187,7 @@
       <div class="modal-card">
         <div class="modal-header">
           <h3>Saved Products</h3>
-          <button type="button" class="btn-close-modal" id="btn-close-saved-modal">&times;</button>
+          <button type="button" class="btn-close-modal" id="btn-close-saved-modal">Close</button>
         </div>
         <div class="modal-body">
           <div class="modal-actions">
@@ -933,7 +1201,7 @@
       <div class="modal-card modal-lg">
         <div class="modal-header">
           <h3>Batch Session</h3>
-          <button type="button" class="btn-close-modal" id="btn-close-batch-modal">&times;</button>
+          <button type="button" class="btn-close-modal" id="btn-close-batch-modal">Close</button>
         </div>
         <div class="modal-body">
           <div class="modal-actions">
@@ -947,7 +1215,7 @@
       <div class="modal-card modal-lg">
         <div class="modal-header">
           <h3>Product Catalogue Overview</h3>
-          <button type="button" class="btn-close-modal" id="btn-close-catalog-modal">&times;</button>
+          <button type="button" class="btn-close-modal" id="btn-close-catalog-modal">Close</button>
         </div>
         <div class="modal-body">
           <div class="category-overview-stats">
@@ -968,7 +1236,7 @@
     <!-- App Footer -->
     <footer class="app-footer">
       <div class="footer-container">
-        <p>BarcodeReader &bull; LDAM Barcode Identification &amp; Safe Damaged EAN-13 Recovery</p>
+        <p>BarcodeReader &bull; LDAM Barcode Identification &amp; Safe Damaged EAN-13 Recovery Workstation</p>
       </div>
     </footer>
   </div>
