@@ -180,3 +180,39 @@ def test_abstention_on_random_noise():
     res = recover_damaged_ean13(noise_im, try_standard_first=True)
     assert res["status"] == "abstained"
     assert res["barcode"] is None
+
+
+def test_recover_skewed_code128_catalog_image():
+    """Verify recovery pipeline recovers tilted Code 128 catalog image."""
+    im = Image.open("tests/test_images/valid_demo_br01.png")
+    skewed = im.rotate(20, expand=True, fillcolor=255)
+
+    # Raw unaligned image cannot be decoded by standard ZXing
+    assert decode_standard_zxing(skewed) is None
+
+    # Pipeline deskews and recovers cleanly
+    res = recover_damaged_ean13(skewed, try_standard_first=True)
+    assert res["status"] == "recovered_from_damaged_image"
+    assert res["barcode"] == "BR000001"
+    assert abs(res["skew_angle_deg"]) >= 10.0
+    assert res["original_crop"].startswith("data:image/png;base64,")
+    assert res["enhanced_crop"].startswith("data:image/png;base64,")
+    assert res["original_crop_base64"] is not None
+    assert res["enhanced_crop_base64"] is not None
+    assert res["scanline_consensus"] == res["consensus_count"]
+
+
+def test_recover_response_fields_consistency():
+    """Verify all expected frontend contract fields exist on abstained and recovered responses."""
+    blank = Image.new("L", (200, 80), color=255)
+    res = recover_damaged_ean13(blank, try_standard_first=True)
+    assert "scanline_consensus" in res
+    assert "consensus_count" in res
+    assert "skew_angle" in res
+    assert "skew_angle_deg" in res
+    assert "original_crop" in res
+    assert "original_crop_base64" in res
+    assert "enhanced_crop" in res
+    assert "enhanced_crop_base64" in res
+    assert "detail" in res
+    assert "abstention_reason" in res

@@ -12,6 +12,7 @@ import base64
 from datetime import datetime, timezone
 from io import BytesIO
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -24,7 +25,9 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.catalogue import (
     Catalogue,
+    DuplicateBarcodeError,
     InvalidBarcodeError,
+    InvalidProductError,
     ProductNotFoundError,
     default_catalogue,
 )
@@ -33,7 +36,9 @@ from app.recovery import recover_damaged_ean13
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 GENERATED_DIR = BASE_DIR.parent / "generated"
-DATA_DIR = BASE_DIR / "data"
+
+env_data_dir = os.environ.get("DATA_DIR") or os.environ.get("CATALOGUE_DATA_DIR")
+DATA_DIR = Path(env_data_dir) if env_data_dir else (BASE_DIR / "data")
 PENDING_SUBMISSIONS_FILE = DATA_DIR / "pending_submissions.json"
 
 # Ensure directories exist for static and generated mounts
@@ -90,6 +95,14 @@ class ProductResponse(BaseModel):
     category_id: int
     category_name: str
     category_code: str | None = None
+
+
+class AddProductRequest(BaseModel):
+    """Payload schema for adding a new product to the catalogue."""
+
+    barcode: str = Field(..., description="Barcode identifier")
+    name: str = Field(..., description="Product name")
+    category_id: Optional[int] = Field(None, description="Optional category ID")
 
 
 class RecoverRequest(BaseModel):
@@ -182,6 +195,66 @@ async def get_categories() -> List[Dict[str, Any]]:
 async def get_products() -> List[Dict[str, Any]]:
     """Return the complete product catalogue with resolved category names."""
     return default_catalogue.get_products(resolve_categories=True)
+
+
+@app.post(
+    "/api/products",
+    summary="Add Product to Catalogue",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: {"description": "Product successfully added to catalogue."},
+        400: {"description": "Validation error (blank name or barcode)."},
+        409: {"description": "Duplicate barcode already exists."},
+    },
+)
+async def create_product(request: AddProductRequest) -> Dict[str, Any]:
+    """Add a new product to the catalogue and persist it."""
+    clean_barcode = request.barcode.strip() if isinstance(request.barcode, str) else ""
+    if not clean_barcode:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Barcode cannot be empty or whitespace.",
+        )
+    clean_name = request.name.strip() if isinstance(request.name, str) else ""
+    if not clean_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Product name cannot be empty or whitespace.",
+        )
+    try:
+        new_product = default_catalogue.add_product(
+            barcode=clean_barcode,
+            name=clean_name,
+            category_id=request.category_id,
+        )
+        return new_product
+    except DuplicateBarcodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        ) from exc
+    except (InvalidProductError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@app.delete(
+    "/api/products/{barcode}",
+    summary="Remove Product from Catalogue",
+    status_code=status.HTTP_200_OK,
+)
+async def delete_product(barcode: str) -> Dict[str, Any]:
+    """Remove a product from the catalogue by barcode."""
+    removed = default_catalogue.remove_product(barcode)
+    if not removed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with barcode '{barcode}' not found.",
+        )
+    return {"status": "success", "barcode": barcode, "message": "Product removed from catalogue."}
 
 
 @app.get("/api/catalog-overview", summary="Catalog Overview and Statistics")
@@ -281,6 +354,11 @@ async def recover_barcode(request: RecoverRequest) -> Dict[str, Any]:
     consensus verification. Returns recovery metrics and crop comparisons.
     """
     raw_data = request.image_data.strip()
+    if not raw_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Image data is empty.",
+        )
     if "," in raw_data:
         raw_data = raw_data.split(",", 1)[1]
 

@@ -114,3 +114,36 @@ def test_catalogue_missing_files(tmp_path):
 
     with pytest.raises(FileNotFoundError):
         Catalogue(categories_path=non_existent_cat, products_path=non_existent_prod)
+
+
+def test_configurable_data_dir_persistence(tmp_path):
+    """Verify configurable data directory seeds initial catalogue and persists updates across restarts."""
+    persistent_dir = tmp_path / "var_data"
+    assert not persistent_dir.exists()
+
+    # 1. First startup with empty directory seeds 16 products
+    cat1 = Catalogue(data_dir=persistent_dir)
+    assert persistent_dir.exists()
+    assert (persistent_dir / "products.json").exists()
+    assert (persistent_dir / "categories.json").exists()
+    assert len(cat1.get_products()) == 16
+
+    # 2. Add product persists to target file
+    cat1.add_product("8888888888888", "Persistent Test Product")
+    assert len(cat1.get_products()) == 17
+
+    # 3. Subsequent startup loads existing persisted data without overwriting
+    cat2 = Catalogue(data_dir=persistent_dir)
+    assert len(cat2.get_products()) == 17
+    assert cat2.lookup_by_barcode("8888888888888")["name"] == "Persistent Test Product"
+
+
+def test_data_dir_env_var_configuration(tmp_path, monkeypatch):
+    """Verify DATA_DIR environment variable configures persistent storage path."""
+    env_dir = tmp_path / "env_data"
+    monkeypatch.setenv("DATA_DIR", str(env_dir))
+
+    cat = Catalogue()
+    assert env_dir.exists()
+    assert (env_dir / "products.json").exists()
+    assert len(cat.get_products()) == 16

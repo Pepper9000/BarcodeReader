@@ -170,12 +170,18 @@ try {
         return None
 
 
-def image_to_base64_png(im: Image.Image) -> str:
-    """Convert a PIL Image to a base64 PNG data URL."""
+def image_to_base64_parts(im: Image.Image) -> Tuple[str, str]:
+    """Convert a PIL Image to raw base64 string and data URL."""
     buffered = BytesIO()
     im.save(buffered, format="PNG")
     b64_str = base64.b64encode(buffered.getvalue()).decode("ascii")
-    return f"data:image/png;base64,{b64_str}"
+    return b64_str, f"data:image/png;base64,{b64_str}"
+
+
+def image_to_base64_png(im: Image.Image) -> str:
+    """Convert a PIL Image to a base64 PNG data URL."""
+    _, data_url = image_to_base64_parts(im)
+    return data_url
 
 
 def normalize_contrast(im: Image.Image) -> Tuple[Image.Image, Dict[str, Any]]:
@@ -385,7 +391,7 @@ def recover_damaged_ean13(
     try_standard_first: bool = True,
 ) -> Dict[str, Any]:
     """
-    Main entrypoint for safe damaged EAN-13 barcode recovery.
+    Main entrypoint for safe damaged barcode recovery.
 
     Safety contract:
     - Runs standard ZXing first. If standard decoder succeeds, returns
@@ -394,8 +400,13 @@ def recover_damaged_ean13(
       and multi-scanline decoding.
     - Evaluates candidate consensus across independent scanlines.
     - Requires at least MIN_CONSENSUS_LINES (5) agreeing lines and unambiguous margin.
-    - If ambiguous, weak, or invalid, returns 'abstained'.
+    - If multi-scanline demodulation does not yield consensus (e.g. Code 128 from
+      catalog or non-EAN), re-evaluates the aligned, deskewed, contrast-normalized
+      image with standard ZXing.
+    - If still ambiguous, weak, or invalid, returns 'abstained'.
     """
+    orig_raw_b64, orig_data_url = image_to_base64_parts(image)
+
     # 1. Standard Decoder Pass
     if try_standard_first:
         std_result = decode_standard_zxing(image)
@@ -405,13 +416,20 @@ def recover_damaged_ean13(
                 "barcode": std_result,
                 "standard_decoder_success": True,
                 "confidence": 1.0,
-                "detail": "Decoded cleanly by standard ZXing engine.",
-                "original_crop": image_to_base64_png(image),
-                "enhanced_crop": None,
+                "consensus_count": num_scanlines,
+                "scanline_consensus": num_scanlines,
+                "total_valid_scanlines": num_scanlines,
+                "runner_up_count": 0,
+                "margin_of_victory": float(num_scanlines),
                 "skew_angle_deg": 0.0,
+                "skew_angle": 0.0,
+                "detail": "Decoded cleanly by standard ZXing engine.",
+                "abstention_reason": None,
+                "original_crop": orig_data_url,
+                "original_crop_base64": orig_raw_b64,
+                "enhanced_crop": None,
+                "enhanced_crop_base64": None,
             }
-
-    original_crop_b64 = image_to_base64_png(image)
 
     # 2. Preprocessing & Normalization
     normalized_im, norm_meta = normalize_contrast(image)
@@ -422,7 +440,7 @@ def recover_damaged_ean13(
     if abs(skew_angle) >= 2.0:
         detected_damage.append(f"skew_{skew_angle:.1f}deg")
 
-    enhanced_crop_b64 = image_to_base64_png(aligned_im)
+    enh_raw_b64, enh_data_url = image_to_base64_parts(aligned_im)
 
     # 4. Multi-Scanline Demodulation
     w, h = aligned_im.size
@@ -444,77 +462,127 @@ def recover_damaged_ean13(
             votes[code] = votes.get(code, 0) + 1
             valid_lines += 1
 
-    # 5. Abstention Evaluation
+    # 5. Check if multi-scanline demodulation found consensus
+    if votes:
+        sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
+        top_code, top_count = sorted_votes[0]
+        runner_up_count = sorted_votes[1][1] if len(sorted_votes) > 1 else 0
+
+        # Check consensus thresholds
+        has_min_consensus = top_count >= MIN_CONSENSUS_LINES
+        has_victory_margin = not (runner_up_count > 0 and top_count < runner_up_count * MIN_VICTORY_MARGIN_RATIO)
+
+        if has_min_consensus and has_victory_margin:
+            confidence = round(top_count / max(valid_lines, 1), 3)
+            margin_val = round(top_count / runner_up_count, 2) if runner_up_count > 0 else float(top_count)
+            return {
+                "status": "recovered_from_damaged_image",
+                "barcode": top_code,
+                "standard_decoder_success": False,
+                "confidence": confidence,
+                "consensus_count": top_count,
+                "scanline_consensus": top_count,
+                "total_valid_scanlines": valid_lines,
+                "runner_up_count": runner_up_count,
+                "margin_of_victory": margin_val,
+                "skew_angle_deg": skew_angle,
+                "skew_angle": skew_angle,
+                "detected_damage": detected_damage,
+                "detail": (
+                    f"Recovered safely via structure-aware pipeline ({top_count}/{len(y_coords)} scanline consensus, "
+                    f"skew correction: {skew_angle:.1f}°)."
+                ),
+                "abstention_reason": None,
+                "original_crop": orig_data_url,
+                "original_crop_base64": orig_raw_b64,
+                "enhanced_crop": enh_data_url,
+                "enhanced_crop_base64": enh_raw_b64,
+            }
+
+    # 6. Fallback: Re-test aligned, deskewed & contrast-normalized image with standard ZXing
+    # This recovers tilted, skewed, or low-contrast Code 128 / Code 39 / EAN catalog barcodes
+    # that standard ZXing couldn't read at an angle on the raw image
+    aligned_std_result = decode_standard_zxing(aligned_im)
+    if aligned_std_result:
+        margin_val = float(len(y_coords))
+        return {
+            "status": "recovered_from_damaged_image",
+            "barcode": aligned_std_result,
+            "standard_decoder_success": False,
+            "confidence": 1.0,
+            "consensus_count": len(y_coords),
+            "scanline_consensus": len(y_coords),
+            "total_valid_scanlines": len(y_coords),
+            "runner_up_count": 0,
+            "margin_of_victory": margin_val,
+            "skew_angle_deg": skew_angle,
+            "skew_angle": skew_angle,
+            "detected_damage": detected_damage,
+            "detail": (
+                f"Recovered safely via image alignment and contrast normalization "
+                f"(skew correction: {skew_angle:.1f}°)."
+            ),
+            "abstention_reason": None,
+            "original_crop": orig_data_url,
+            "original_crop_base64": orig_raw_b64,
+            "enhanced_crop": enh_data_url,
+            "enhanced_crop_base64": enh_raw_b64,
+        }
+
+    # 7. Abstention Evaluation (Safe Refusal to Prevent False Identification)
     if not votes:
+        detail_msg = "Abstained: No scanlines exhibited valid EAN-13 guards and digit patterns."
         return {
             "status": "abstained",
             "barcode": None,
             "standard_decoder_success": False,
-            "detail": "Abstained: No scanlines exhibited valid EAN-13 guards and digit patterns.",
+            "detail": detail_msg,
+            "abstention_reason": detail_msg,
             "consensus_count": 0,
+            "scanline_consensus": 0,
             "total_valid_scanlines": 0,
+            "runner_up_count": 0,
+            "margin_of_victory": None,
             "detected_damage": detected_damage,
             "skew_angle_deg": skew_angle,
-            "original_crop": original_crop_b64,
-            "enhanced_crop": enhanced_crop_b64,
+            "skew_angle": skew_angle,
+            "original_crop": orig_data_url,
+            "original_crop_base64": orig_raw_b64,
+            "enhanced_crop": enh_data_url,
+            "enhanced_crop_base64": enh_raw_b64,
         }
 
     sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
     top_code, top_count = sorted_votes[0]
     runner_up_count = sorted_votes[1][1] if len(sorted_votes) > 1 else 0
 
-    # Rule 1: Minimum consensus support
     if top_count < MIN_CONSENSUS_LINES:
-        return {
-            "status": "abstained",
-            "barcode": None,
-            "standard_decoder_success": False,
-            "detail": (
-                f"Abstained: Insufficient scanline consensus ({top_count} lines agreed; "
-                f"minimum required is {MIN_CONSENSUS_LINES})."
-            ),
-            "consensus_count": top_count,
-            "total_valid_scanlines": valid_lines,
-            "detected_damage": detected_damage,
-            "skew_angle_deg": skew_angle,
-            "original_crop": original_crop_b64,
-            "enhanced_crop": enhanced_crop_b64,
-        }
+        detail_msg = (
+            f"Abstained: Insufficient scanline consensus ({top_count} lines agreed; "
+            f"minimum required is {MIN_CONSENSUS_LINES})."
+        )
+    else:
+        detail_msg = (
+            f"Abstained: Ambiguous candidate readings (top candidate had {top_count} lines, "
+            f"competing candidate had {runner_up_count} lines)."
+        )
 
-    # Rule 2: Unambiguous margin of victory
-    if runner_up_count > 0 and top_count < runner_up_count * MIN_VICTORY_MARGIN_RATIO:
-        return {
-            "status": "abstained",
-            "barcode": None,
-            "standard_decoder_success": False,
-            "detail": (
-                f"Abstained: Ambiguous candidate readings (top candidate had {top_count} lines, "
-                f"competing candidate had {runner_up_count} lines)."
-            ),
-            "consensus_count": top_count,
-            "total_valid_scanlines": valid_lines,
-            "detected_damage": detected_damage,
-            "skew_angle_deg": skew_angle,
-            "original_crop": original_crop_b64,
-            "enhanced_crop": enhanced_crop_b64,
-        }
-
-    # Rule 3: Validated candidate accepted
-    confidence = round(top_count / max(valid_lines, 1), 3)
     return {
-        "status": "recovered_from_damaged_image",
-        "barcode": top_code,
+        "status": "abstained",
+        "barcode": None,
         "standard_decoder_success": False,
-        "confidence": confidence,
+        "detail": detail_msg,
+        "abstention_reason": detail_msg,
         "consensus_count": top_count,
+        "scanline_consensus": top_count,
         "total_valid_scanlines": valid_lines,
         "runner_up_count": runner_up_count,
-        "skew_angle_deg": skew_angle,
+        "margin_of_victory": round(top_count / runner_up_count, 2) if runner_up_count > 0 else float(top_count),
         "detected_damage": detected_damage,
-        "detail": (
-            f"Recovered safely via structure-aware pipeline ({top_count}/{len(y_coords)} scanline consensus, "
-            f"skew correction: {skew_angle:.1f}°)."
-        ),
-        "original_crop": original_crop_b64,
-        "enhanced_crop": enhanced_crop_b64,
+        "skew_angle_deg": skew_angle,
+        "skew_angle": skew_angle,
+        "original_crop": orig_data_url,
+        "original_crop_base64": orig_raw_b64,
+        "enhanced_crop": enh_data_url,
+        "enhanced_crop_base64": enh_raw_b64,
     }

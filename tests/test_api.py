@@ -121,3 +121,62 @@ def test_scan_missing_field():
     """Verify submitting missing barcode field returns 422 unprocessable entity."""
     response = client.post("/api/scan", json={})
     assert response.status_code == 422
+
+
+def test_api_recover_clean_image():
+    """Verify /api/recover decodes a clean image and looks up catalog product."""
+    import base64
+    from pathlib import Path
+
+    img_path = Path(__file__).parent / "test_images" / "valid_demo_br01.png"
+    b64 = base64.b64encode(img_path.read_bytes()).decode("ascii")
+    response = client.post("/api/recover", json={"image_data": f"data:image/png;base64,{b64}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "decoded_normally"
+    assert data["barcode"] == "BR000001"
+    assert data["product_found"] is True
+    assert data["product"]["id"] == "PROD-001"
+    assert data["original_crop"].startswith("data:image/png;base64,")
+
+
+def test_api_recover_skewed_image():
+    """Verify /api/recover deskews and recovers tilted catalog barcode image."""
+    import base64
+    from io import BytesIO
+    from pathlib import Path
+    from PIL import Image
+
+    img_path = Path(__file__).parent / "test_images" / "valid_demo_br01.png"
+    im = Image.open(img_path)
+    skewed = im.rotate(20, expand=True, fillcolor=255)
+    buf = BytesIO()
+    skewed.save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+    response = client.post("/api/recover", json={"image_data": f"data:image/png;base64,{b64}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "recovered_from_damaged_image"
+    assert data["barcode"] == "BR000001"
+    assert data["product_found"] is True
+    assert data["product"]["id"] == "PROD-001"
+    assert abs(data["skew_angle_deg"]) >= 10.0
+
+
+def test_api_recover_invalid_payloads():
+    """Verify /api/recover handles empty, malformed, and missing payloads cleanly with informative errors."""
+    # Missing image_data
+    r1 = client.post("/api/recover", json={})
+    assert r1.status_code == 422
+    assert "detail" in r1.json()
+
+    # Empty image_data
+    r2 = client.post("/api/recover", json={"image_data": "   "})
+    assert r2.status_code == 400
+    assert "empty" in r2.json()["detail"].lower()
+
+    # Unparseable image_data
+    r3 = client.post("/api/recover", json={"image_data": "invalid-base64-random-string"})
+    assert r3.status_code == 400
+    assert "could not parse" in r3.json()["detail"].lower()

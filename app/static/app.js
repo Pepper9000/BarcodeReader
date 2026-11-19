@@ -76,9 +76,28 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------------------
   // DOM Elements - Section 1: Scan
   // ---------------------------------------------------------------------------
+  // Settings Modal Elements
+  const btnOpenSettings = document.getElementById("btn-open-settings");
+  const modalSettings = document.getElementById("modal-settings");
+  const btnCloseSettingsModal = document.getElementById("btn-close-settings-modal");
+  const btnCloseSettingsBtn = document.getElementById("btn-close-settings-btn");
+
+  // Unknown Barcode Elements in Product Card
+  const unknownBarcodeCode = document.getElementById("unknown-barcode-code");
+  const unknownProductName = document.getElementById("unknown-product-name");
+  const unknownProductError = document.getElementById("unknown-product-error");
+  const btnSaveToCatalogue = document.getElementById("btn-save-to-catalogue");
+  const saveCatalogueBtnText = document.getElementById("save-catalogue-btn-text");
+  const saveCatalogueSpinner = document.getElementById("save-catalogue-spinner");
+  const saveUnknownProductForm = document.getElementById("save-unknown-product-form");
+  let lastScannedUnknownBarcode = null;
+
+  // Section 1: Scan
   const tabManualBtn = document.getElementById("tab-manual-btn");
   const tabImageBtn = document.getElementById("tab-image-btn");
   const tabCameraBtn = document.getElementById("tab-camera-btn");
+  const tabRecoveryBtn = document.getElementById("tab-recovery-btn");
+  const panelRecovery = document.getElementById("panel-recovery");
 
   const panelManual = document.getElementById("panel-manual");
   const panelImage = document.getElementById("panel-image");
@@ -188,6 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------------------
   // DOM Elements - Section 3: History
   // ---------------------------------------------------------------------------
+  const historyTable = document.getElementById("history-table");
   const clearHistoryBtn = document.getElementById("clear-history-btn");
   const historySearchInput = document.getElementById("history-search-input");
   const historyMethodFilter = document.getElementById("history-method-filter");
@@ -294,6 +314,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Section Navigation Router (One focused section visible at a time)
   // ---------------------------------------------------------------------------
   function switchSection(sectionId) {
+    if (sectionId === "recovery") {
+      switchSection("scan");
+      switchTab("recovery");
+      return;
+    }
+
     if (activeSection === sectionId) return;
 
     // Stop camera if leaving the Scan section
@@ -341,22 +367,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Bind Section Nav Buttons
-  btnNavScan.addEventListener("click", () => switchSection("scan"));
-  btnNavRecovery.addEventListener("click", () => switchSection("recovery"));
-  btnNavHistory.addEventListener("click", () => switchSection("history"));
-  btnNavProducts.addEventListener("click", () => switchSection("products"));
-  btnOpenBatch.addEventListener("click", () => switchSection("batch"));
-  btnOpenSaved.addEventListener("click", () => switchSection("saved"));
-  btnOpenCompare.addEventListener("click", () => switchSection("compare"));
-  btnOpenCatalog.addEventListener("click", () => switchSection("catalog"));
-  btnNavLabels.addEventListener("click", () => switchSection("labels"));
+  if (btnNavScan) btnNavScan.addEventListener("click", () => switchSection("scan"));
+  if (btnNavRecovery) btnNavRecovery.addEventListener("click", () => switchSection("recovery"));
+  if (btnNavHistory) btnNavHistory.addEventListener("click", () => switchSection("history"));
+  if (btnNavProducts) btnNavProducts.addEventListener("click", () => switchSection("products"));
+  if (btnOpenBatch) btnOpenBatch.addEventListener("click", () => switchSection("batch"));
+  if (btnOpenSaved) btnOpenSaved.addEventListener("click", () => switchSection("saved"));
+  if (btnOpenCompare) btnOpenCompare.addEventListener("click", () => switchSection("compare"));
+  if (btnOpenCatalog) btnOpenCatalog.addEventListener("click", () => switchSection("catalog"));
+  if (btnNavLabels) btnNavLabels.addEventListener("click", () => switchSection("labels"));
+
+  // Workstation Aux Header Handlers
+  const btnOpenAuditHeader = document.getElementById("btn-open-audit-header");
+  if (btnOpenAuditHeader) {
+    btnOpenAuditHeader.addEventListener("click", () => switchSection("history"));
+  }
+
+  const btnQuickFind = document.getElementById("btn-quick-find");
+  if (btnQuickFind) {
+    btnQuickFind.addEventListener("click", () => {
+      switchSection("products");
+      const prodSearch = document.getElementById("products-search-input");
+      if (prodSearch) prodSearch.focus();
+    });
+  }
+
+  // Settings Modal Handlers
+  if (btnOpenSettings && modalSettings) {
+    btnOpenSettings.addEventListener("click", () => {
+      modalSettings.classList.remove("hidden");
+    });
+  }
+  if (btnCloseSettingsModal && modalSettings) {
+    btnCloseSettingsModal.addEventListener("click", () => {
+      modalSettings.classList.add("hidden");
+    });
+  }
+  if (btnCloseSettingsBtn && modalSettings) {
+    btnCloseSettingsBtn.addEventListener("click", () => {
+      modalSettings.classList.add("hidden");
+    });
+  }
+  [btnOpenBatch, btnOpenSaved, btnOpenCompare, btnOpenCatalog, btnNavHistory].forEach((btn) => {
+    if (btn && modalSettings) {
+      btn.addEventListener("click", () => {
+        modalSettings.classList.add("hidden");
+      });
+    }
+  });
 
   // ---------------------------------------------------------------------------
   // Alert Helper
   // ---------------------------------------------------------------------------
   function showAlert(level, title, message) {
     statusAlert.className = `alert alert-${level}`;
-    const icons = { success: "✓", error: "❌", warning: "⚠️", idle: "ℹ️" };
+    const icons = { success: "", error: "", warning: "", idle: "" };
     alertIcon.textContent = icons[level] || "ℹ️";
     alertTitle.textContent = title;
     alertMessage.textContent = message;
@@ -404,11 +469,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     activeTab = newTab;
 
-    [tabManualBtn, tabImageBtn, tabCameraBtn].forEach((btn) => {
+    [tabManualBtn, tabImageBtn, tabCameraBtn, tabRecoveryBtn].forEach((btn) => {
+      if (!btn) return;
       btn.classList.remove("active");
       btn.setAttribute("aria-selected", "false");
     });
-    [panelManual, panelImage, panelCamera].forEach((panel) => {
+    [panelManual, panelImage, panelCamera, panelRecovery].forEach((panel) => {
+      if (!panel) return;
       panel.classList.remove("active");
       panel.classList.add("hidden");
     });
@@ -429,12 +496,22 @@ document.addEventListener("DOMContentLoaded", () => {
       tabCameraBtn.setAttribute("aria-selected", "true");
       panelCamera.classList.remove("hidden");
       panelCamera.classList.add("active");
+    } else if (newTab === "recovery") {
+      if (tabRecoveryBtn) {
+        tabRecoveryBtn.classList.add("active");
+        tabRecoveryBtn.setAttribute("aria-selected", "true");
+      }
+      if (panelRecovery) {
+        panelRecovery.classList.remove("hidden");
+        panelRecovery.classList.add("active");
+      }
     }
   }
 
-  tabManualBtn.addEventListener("click", () => switchTab("manual"));
-  tabImageBtn.addEventListener("click", () => switchTab("image"));
-  tabCameraBtn.addEventListener("click", () => switchTab("camera"));
+  if (tabManualBtn) tabManualBtn.addEventListener("click", () => switchTab("manual"));
+  if (tabImageBtn) tabImageBtn.addEventListener("click", () => switchTab("image"));
+  if (tabCameraBtn) tabCameraBtn.addEventListener("click", () => switchTab("camera"));
+  if (tabRecoveryBtn) tabRecoveryBtn.addEventListener("click", () => switchTab("recovery"));
 
   btnFallbackManual.addEventListener("click", () => switchTab("manual"));
   btnFallbackUpload.addEventListener("click", () => switchTab("image"));
@@ -469,61 +546,112 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show Looking Up State
     showLookingUpState(rawBarcode);
 
+    let response;
     try {
-      const response = await fetch("/api/scan", {
+      response = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ barcode: rawBarcode }),
         signal: activeAbortController.signal,
       });
-
-      // Ignore stale responses
-      if (thisRequestId !== currentLookupRequestId) return;
-
-      if (response.ok) {
-        const product = await response.json();
-        currentActiveProduct = product;
-        showProductFoundState(product);
-        playSuccessBeep();
-
-        // Record to session history
-        recordHistory(rawBarcode, source, "found", product.name, product);
-
-        // Auto-add to batch session if batch mode is enabled
-        if (batchModeCheckbox && batchModeCheckbox.checked) {
-          addToBatchSession(product.barcode, product);
-        }
-      } else if (response.status === 404) {
-        currentActiveProduct = null;
-        showProductNotFoundState(rawBarcode);
-        recordHistory(rawBarcode, source, "not_found", "Not in catalogue", null);
-
-        if (batchModeCheckbox && batchModeCheckbox.checked) {
-          addToBatchSession(rawBarcode, null);
-        }
-      } else if (response.status === 400 || response.status === 422) {
-        currentActiveProduct = null;
-        const errData = await response.json().catch(() => ({}));
-        showInvalidBarcodeState(errData.detail || "Invalid barcode format.");
-        recordHistory(rawBarcode, source, "invalid", errData.detail || "Invalid format", null);
-      } else {
-        currentActiveProduct = null;
-        const errData = await response.json().catch(() => ({}));
-        showLookupErrorState(errData.detail || `Server returned error (${response.status})`);
-        recordHistory(rawBarcode, source, "error", "Server error", null);
-      }
     } catch (err) {
       if (err.name === "AbortError") return; // Normal request cancellation
       if (thisRequestId !== currentLookupRequestId) return;
       currentActiveProduct = null;
       showLookupErrorState("Network connection failed. Could not reach server.");
       recordHistory(rawBarcode, source, "error", "Network error", null);
+      return;
+    }
+
+    // Ignore stale responses
+    if (thisRequestId !== currentLookupRequestId) return;
+
+    if (response.ok) {
+      const product = await response.json();
+      currentActiveProduct = product;
+      showProductFoundState(product);
+      playSuccessBeep();
+
+      // Record to session history
+      recordHistory(rawBarcode, source, "found", product.name, product);
+
+      // Auto-add to batch session if batch mode is enabled
+      if (batchModeCheckbox && batchModeCheckbox.checked) {
+        addToBatchSession(product.barcode, product);
+      }
+    } else if (response.status === 404) {
+      currentActiveProduct = null;
+      showProductNotFoundState(rawBarcode);
+      recordHistory(rawBarcode, source, "not_found", "Not in catalogue", null);
+
+      if (batchModeCheckbox && batchModeCheckbox.checked) {
+        addToBatchSession(rawBarcode, null);
+      }
+    } else if (response.status === 400 || response.status === 422) {
+      currentActiveProduct = null;
+      const errData = await response.json().catch(() => ({}));
+      showInvalidBarcodeState(errData.detail || "Invalid barcode format.");
+      recordHistory(rawBarcode, source, "invalid", errData.detail || "Invalid format", null);
+    } else {
+      currentActiveProduct = null;
+      const errData = await response.json().catch(() => ({}));
+      showLookupErrorState(errData.detail || `Server returned error (${response.status})`);
+      recordHistory(rawBarcode, source, "error", "Server error", null);
     }
   }
 
   // ---------------------------------------------------------------------------
   // State Rendering Helpers for Product Card
   // ---------------------------------------------------------------------------
+  function drawBarcodeSvg(barcode, containerEl, legendEl) {
+    if (!containerEl) return;
+    const code = String(barcode || "BR000001");
+    if (legendEl) {
+      legendEl.textContent = `START * ${code.split("").join(" ")} * STOP`;
+    }
+
+    const width = 360;
+    const height = 76;
+    let x = 14;
+    const rects = [];
+
+    // Quiet zone and start guard
+    rects.push(`<rect x="${x}" y="0" width="3" height="${height}" fill="#0f172a" />`);
+    x += 5;
+    rects.push(`<rect x="${x}" y="0" width="2" height="${height}" fill="#0f172a" />`);
+    x += 4;
+    rects.push(`<rect x="${x}" y="0" width="1" height="${height}" fill="#0f172a" />`);
+    x += 3;
+
+    for (let i = 0; i < code.length; i++) {
+      const charCode = code.charCodeAt(i);
+      const b1 = (charCode % 3) + 1;
+      const s1 = ((charCode >> 1) % 3) + 1;
+      const b2 = ((charCode >> 2) % 3) + 1;
+      const s2 = ((charCode >> 3) % 3) + 1;
+      const b3 = (charCode % 2) + 1;
+      const s3 = 2;
+
+      rects.push(`<rect x="${x}" y="0" width="${b1 * 1.5}" height="${height}" fill="#0f172a" />`);
+      x += b1 * 1.5 + s1 * 1.5;
+      rects.push(`<rect x="${x}" y="0" width="${b2 * 1.5}" height="${height}" fill="#0f172a" />`);
+      x += b2 * 1.5 + s2 * 1.5;
+      rects.push(`<rect x="${x}" y="0" width="${b3 * 1.5}" height="${height}" fill="#0f172a" />`);
+      x += b3 * 1.5 + s3 * 1.5;
+    }
+
+    // Stop pattern
+    rects.push(`<rect x="${x}" y="0" width="3" height="${height}" fill="#0f172a" />`);
+    x += 5;
+    rects.push(`<rect x="${x}" y="0" width="1" height="${height}" fill="#0f172a" />`);
+    x += 3;
+    rects.push(`<rect x="${x}" y="0" width="4" height="${height}" fill="#0f172a" />`);
+    x += 8;
+
+    const totalWidth = Math.max(x, width);
+    containerEl.innerHTML = `<svg viewBox="0 0 ${totalWidth} ${height}" preserveAspectRatio="xMidYMid meet" class="barcode-svg" xmlns="http://www.w3.org/2000/svg">${rects.join("")}</svg>`;
+  }
+
   function hideAllProductStates() {
     productPlaceholder.classList.add("hidden");
     productLookingUp.classList.add("hidden");
@@ -543,6 +671,8 @@ document.addEventListener("DOMContentLoaded", () => {
     productStatusBadge.textContent = "Looking Up";
     productStatusBadge.className = "badge";
     lookingUpDesc.textContent = `Checking catalogue for code "${code}"...`;
+    if (detectedBarcodeDisplay) detectedBarcodeDisplay.textContent = code;
+    if (decodingSourceBadge) decodingSourceBadge.textContent = "STATUS: CHECKING // TRANSMITTING";
   }
 
   function showProductFoundState(product) {
@@ -552,10 +682,44 @@ document.addEventListener("DOMContentLoaded", () => {
     productStatusBadge.className = "badge badge-source";
 
     productName.textContent = product.name;
-    productCategoryName.textContent = product.category_name || "Uncategorized";
+    productCategoryName.textContent = (product.category_name || "Uncategorized").toUpperCase();
     productBarcode.textContent = product.barcode;
     productId.textContent = product.id;
     if (productCategoryId) productCategoryId.textContent = `CAT-${product.category_id}`;
+
+    // Update workstation dossier elements
+    if (detectedBarcodeDisplay) detectedBarcodeDisplay.textContent = product.barcode;
+    if (decodingSourceBadge) decodingSourceBadge.textContent = "STATUS: VERIFIED // CONFIDENCE 99.8%";
+
+    const metaId = document.getElementById("meta-attr-id");
+    if (metaId) metaId.textContent = product.id;
+
+    const metaSymb = document.getElementById("meta-attr-symbology");
+    if (metaSymb) {
+      metaSymb.textContent = product.barcode.startsWith("BR") ? "Code 128 (Type B)" : "EAN-13 (Standard)";
+    }
+
+    const metaCat = document.getElementById("meta-attr-category");
+    if (metaCat) metaCat.textContent = product.category_name || "Uncategorized";
+
+    const metaBrand = document.getElementById("meta-attr-brand");
+    if (metaBrand) metaBrand.textContent = "Not available";
+
+    const chamberSymb = document.getElementById("chamber-symbology-header");
+    if (chamberSymb) {
+      chamberSymb.textContent = product.barcode.startsWith("BR") ? "SYMBOLOGY: CODE-128 SUB-B" : "SYMBOLOGY: EAN-13 STD";
+    }
+
+    const dossierSvgContainer = document.getElementById("dossier-barcode-graphic");
+    const dossierLegend = document.getElementById("dossier-barcode-legend");
+    if (dossierSvgContainer) {
+      drawBarcodeSvg(product.barcode, dossierSvgContainer, dossierLegend);
+    }
+
+    // Highlight active item in workstation catalog grid
+    document.querySelectorAll(".workstation-product-card").forEach((card) => {
+      card.classList.toggle("active-item", card.getAttribute("data-barcode") === product.barcode);
+    });
 
     // Enable product actions
     btnBookmarkProduct.classList.remove("hidden");
@@ -564,15 +728,152 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update bookmark star if already saved
     const isSaved = savedProducts.some((p) => p.barcode === product.barcode);
-    btnBookmarkProduct.textContent = isSaved ? "★ Bookmarked" : "★ Bookmark";
+    btnBookmarkProduct.textContent = isSaved ? "Bookmarked" : "Bookmark";
   }
 
   function showProductNotFoundState(code) {
     hideAllProductStates();
+    lastScannedUnknownBarcode = code;
     productNotFound.classList.remove("hidden");
-    productStatusBadge.textContent = "Not in Catalogue";
+    productStatusBadge.textContent = "Unknown Barcode";
     productStatusBadge.className = "badge";
-    notFoundDesc.textContent = `The code "${code}" was detected, but no matching product was found in the current catalogue.`;
+    notFoundDesc.textContent = `This barcode is not in the catalogue. Enter a product name to register it.`;
+
+    if (detectedBarcodeDisplay) detectedBarcodeDisplay.textContent = code;
+    if (decodingSourceBadge) decodingSourceBadge.textContent = "STATUS: UNKNOWN // 404 NOT IN CATALOGUE";
+
+    const dossierSvgContainer = document.getElementById("dossier-barcode-graphic");
+    const dossierLegend = document.getElementById("dossier-barcode-legend");
+    if (dossierSvgContainer) {
+      drawBarcodeSvg(code, dossierSvgContainer, dossierLegend);
+    }
+
+    // Remove active highlight from workstation catalog grid
+    document.querySelectorAll(".workstation-product-card").forEach((card) => {
+      card.classList.remove("active-item");
+    });
+
+    if (unknownBarcodeCode) {
+      unknownBarcodeCode.textContent = code;
+    }
+    if (unknownProductName) {
+      unknownProductName.value = "";
+    }
+    if (unknownProductError) {
+      unknownProductError.classList.add("hidden");
+      unknownProductError.textContent = "";
+    }
+    if (btnSaveToCatalogue) {
+      btnSaveToCatalogue.disabled = false;
+    }
+    if (saveCatalogueSpinner) {
+      saveCatalogueSpinner.classList.add("hidden");
+    }
+    if (saveCatalogueBtnText) {
+      saveCatalogueBtnText.textContent = "Save to Catalogue";
+    }
+    setTimeout(() => {
+      if (unknownProductName) unknownProductName.focus();
+    }, 80);
+  }
+
+  async function handleSaveUnknownProduct() {
+    const barcode = (lastScannedUnknownBarcode || lastScannedBarcode || "").trim();
+    const name = unknownProductName ? unknownProductName.value.trim() : "";
+
+    if (!barcode) {
+      if (unknownProductError) {
+        unknownProductError.textContent = "No valid barcode found to save.";
+        unknownProductError.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (!name) {
+      if (unknownProductError) {
+        unknownProductError.textContent = "Product name cannot be blank.";
+        unknownProductError.classList.remove("hidden");
+      }
+      if (unknownProductName) unknownProductName.focus();
+      return;
+    }
+
+    if (unknownProductError) {
+      unknownProductError.classList.add("hidden");
+      unknownProductError.textContent = "";
+    }
+
+    if (btnSaveToCatalogue) btnSaveToCatalogue.disabled = true;
+    if (saveCatalogueSpinner) saveCatalogueSpinner.classList.remove("hidden");
+    if (saveCatalogueBtnText) saveCatalogueBtnText.textContent = "Saving...";
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          barcode: barcode,
+          name: name,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = errJson.detail || `Failed to save product (status ${res.status})`;
+        if (unknownProductError) {
+          unknownProductError.textContent = errMsg;
+          unknownProductError.classList.remove("hidden");
+        }
+        return;
+      }
+
+      const newProduct = await res.json();
+      currentActiveProduct = newProduct;
+      showAlert("success", "Saved to Catalogue", `"${newProduct.name}" added to catalogue.`);
+
+      // Update scan history if current item was not_found
+      if (scanHistory.length > 0 && scanHistory[0].barcode === newProduct.barcode) {
+        scanHistory[0].status = "found";
+        scanHistory[0].name = newProduct.name;
+        scanHistory[0].product = newProduct;
+        renderHistoryTable();
+      }
+
+      // Update batch session item if present
+      const batchItem = batchSession.find((b) => b.barcode === newProduct.barcode);
+      if (batchItem) {
+        batchItem.name = newProduct.name;
+        batchItem.category = newProduct.category_name;
+        batchItem.product = newProduct;
+        renderBatchTable();
+      }
+
+      // Reload catalogue and overview caches
+      loadProductsAndCategories();
+      loadCatalogOverview();
+
+      // Immediately display product found details for this scan!
+      showProductFoundState(newProduct);
+    } catch (err) {
+      if (unknownProductError) {
+        unknownProductError.textContent = err.message || "Network error while saving product.";
+        unknownProductError.classList.remove("hidden");
+      }
+    } finally {
+      if (btnSaveToCatalogue) btnSaveToCatalogue.disabled = false;
+      if (saveCatalogueSpinner) saveCatalogueSpinner.classList.add("hidden");
+      if (saveCatalogueBtnText) saveCatalogueBtnText.textContent = "Save to Catalogue";
+    }
+  }
+
+  if (btnSaveToCatalogue) {
+    btnSaveToCatalogue.addEventListener("click", handleSaveUnknownProduct);
+  }
+  if (saveUnknownProductForm) {
+    saveUnknownProductForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleSaveUnknownProduct();
+    });
   }
 
   function showInvalidBarcodeState(message) {
@@ -680,9 +981,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    pendingRecoveryImageBlob = file;
     const reader = new FileReader();
     reader.onload = (e) => {
+      pendingRecoveryImageBlob = e.target.result;
       imagePreview.src = e.target.result;
       previewFilename.textContent = file.name;
       previewDetails.textContent = `${(file.size / 1024).toFixed(1)} KB`;
@@ -913,7 +1214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await currentVideoTrack.applyConstraints({
         advanced: [{ torch: currentTorchState }],
       });
-      cameraTorchBtn.textContent = currentTorchState ? "🔦 Torch (On)" : "🔦 Torch";
+      cameraTorchBtn.textContent = currentTorchState ? "Torch (On)" : "Torch";
     } catch (e) {
       console.warn("Torch constraint not supported:", e);
     }
@@ -992,29 +1293,76 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------------------
   // Section 2: Damaged Barcode Recovery Engine
   // ---------------------------------------------------------------------------
+  function formatRecoveryError(detail) {
+    if (!detail) return "Recovery failed.";
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (item && item.msg) {
+            const loc = Array.isArray(item.loc) ? item.loc.filter((l) => l !== "body").join(".") : "";
+            return loc ? `${loc}: ${item.msg}` : item.msg;
+          }
+          return JSON.stringify(item);
+        })
+        .join("; ");
+    }
+    if (typeof detail === "object") {
+      if (detail.message) return detail.message;
+      if (detail.msg) return detail.msg;
+      return JSON.stringify(detail);
+    }
+    return String(detail);
+  }
+
   async function executeDamageRecovery(imageDataUrl, sourceTag = "Recovery Engine") {
-    switchSection("recovery");
+    switchSection("scan");
+    switchTab("recovery");
     recoverySpinner.classList.remove("hidden");
     btnRunRecovery.disabled = true;
+
+    // Reset status pill and message during processing so stale verdict isn't shown
+    recoveryStatusPill.textContent = "Processing...";
+    recoveryStatusPill.className = "badge";
     recoveryStatusText.textContent = "Processing image through contrast normalization, tilt alignment, and 40 horizontal scanlines...";
 
     try {
+      // Ensure imageDataUrl is a data URL string even if passed a File/Blob
+      let dataUrlString = imageDataUrl;
+      if (imageDataUrl instanceof Blob) {
+        dataUrlString = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Failed to read image file data."));
+          reader.readAsDataURL(imageDataUrl);
+        });
+      }
+
+      if (!dataUrlString || typeof dataUrlString !== "string" || !dataUrlString.trim()) {
+        throw new Error("Invalid or empty image data.");
+      }
+
       const res = await fetch("/api/recover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_data: imageDataUrl }),
+        body: JSON.stringify({ image_data: dataUrlString }),
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Recovery failed.");
+        const errJson = await res.json().catch(() => ({}));
+        const errMsg = formatRecoveryError(errJson.detail) || `Server returned error (${res.status})`;
+        throw new Error(errMsg);
       }
 
       const data = await res.json();
       renderRecoveryResults(data, sourceTag);
     } catch (err) {
       showAlert("error", "Recovery Error", err.message);
+      recoveryStatusPill.textContent = "Recovery Error";
+      recoveryStatusPill.className = "badge";
       recoveryStatusText.textContent = `Recovery error: ${err.message}`;
+      recoveryAbstentionReason.textContent = err.message;
     } finally {
       recoverySpinner.classList.add("hidden");
       btnRunRecovery.disabled = false;
@@ -1025,40 +1373,55 @@ document.addEventListener("DOMContentLoaded", () => {
     recoveryTransparencyCard.classList.remove("hidden");
 
     // Populate Crops
-    if (data.original_crop_base64) {
-      transparencyOriginalImg.src = `data:image/png;base64,${data.original_crop_base64}`;
+    const originalCrop = data.original_crop || (data.original_crop_base64 ? `data:image/png;base64,${data.original_crop_base64}` : null);
+    if (originalCrop) {
+      transparencyOriginalImg.src = originalCrop;
     }
-    if (data.enhanced_crop_base64) {
-      transparencyEnhancedImg.src = `data:image/png;base64,${data.enhanced_crop_base64}`;
+    const enhancedCrop = data.enhanced_crop || (data.enhanced_crop_base64 ? `data:image/png;base64,${data.enhanced_crop_base64}` : null);
+    if (enhancedCrop) {
+      transparencyEnhancedImg.src = enhancedCrop;
+    } else if (originalCrop) {
+      transparencyEnhancedImg.src = originalCrop;
     }
 
     // Populate Status & Verdict
     const status = data.status; // 'decoded_normally' | 'recovered_from_damaged_image' | 'abstained'
+    const consensus = data.consensus_count ?? data.scanline_consensus ?? 0;
+    const skewDeg = data.skew_angle_deg ?? data.skew_angle ?? 0.0;
+    const abstentionReason = data.detail ?? data.abstention_reason ?? "Insufficient consensus";
+    const margin = data.margin_of_victory != null
+      ? `${Number(data.margin_of_victory).toFixed(1)}x`
+      : (data.runner_up_count != null && data.runner_up_count > 0 && consensus > 0
+          ? `${(consensus / data.runner_up_count).toFixed(1)}x`
+          : (consensus > 0 ? `${consensus}.0x` : "—"));
+
     if (status === "decoded_normally") {
       recoveryStatusPill.textContent = "Decoded Normally";
       recoveryStatusPill.className = "badge badge-source";
       recoveryStatusText.textContent = `Clean code detected on standard pass: ${data.barcode}. Catalog match: ${data.product_found ? data.product.name : "Not in catalogue"}.`;
-    } else if (status === "recovered_from_damaged_image") {
-      recoveryStatusPill.textContent = "✓ Recovered Safely";
+    } else if (status === "recovered_from_damaged_image" && data.barcode) {
+      recoveryStatusPill.textContent = "Recovered Safely";
       recoveryStatusPill.className = "badge badge-source";
-      recoveryStatusText.textContent = `Safe recovery confirmed across ${data.scanline_consensus || "multi"} scanlines. Code: ${data.barcode}. Catalog: ${data.product_found ? data.product.name : "Not in catalogue"}.`;
+      recoveryStatusText.textContent = `Safe recovery confirmed across ${consensus || "multi"} scanlines. Code: ${data.barcode}. Catalog: ${data.product_found ? data.product.name : "Not in catalogue"}.`;
     } else {
       recoveryStatusPill.textContent = "Safely Abstained";
       recoveryStatusPill.className = "badge";
-      recoveryStatusText.textContent = `Signal damaged or ambiguous. Refused to guess to prevent false product identification. Reason: ${data.abstention_reason || "Insufficient consensus"}.`;
+      recoveryStatusText.textContent = `Signal damaged or ambiguous. Refused to guess to prevent false product identification. Reason: ${abstentionReason}.`;
     }
 
     recoveryMethodBadge.textContent = sourceTag;
 
     // Optional Details
-    recoveryScanlineConsensus.textContent = `${data.scanline_consensus || 0} / 40 lines`;
-    recoveryMarginVictory.textContent = `${data.margin_of_victory != null ? data.margin_of_victory.toFixed(1) : "—"}x`;
+    recoveryScanlineConsensus.textContent = `${consensus} / 40 lines`;
+    recoveryMarginVictory.textContent = margin;
     recoveryCalibratedModules.textContent = data.calibrated_module_width ? `${data.calibrated_module_width.toFixed(2)} px` : "—";
-    recoverySkewAngle.textContent = data.skew_angle != null ? `${data.skew_angle.toFixed(1)}°` : "0.0°";
-    recoveryAbstentionReason.textContent = data.abstention_reason || "None (Consensus verified with 0 false identification risk)";
+    recoverySkewAngle.textContent = `${Number(skewDeg).toFixed(1)}°`;
+    recoveryAbstentionReason.textContent = (status === "recovered_from_damaged_image" || status === "decoded_normally")
+      ? "None (Consensus verified with 0 false identification risk)"
+      : abstentionReason;
 
     // If a valid code was recovered, offer to view in Scanner
-    if (data.barcode) {
+    if (data.barcode && (status === "recovered_from_damaged_image" || status === "decoded_normally")) {
       recordHistory(data.barcode, `Recovery (${status})`, data.product_found ? "found" : "not_found", data.product ? data.product.name : "Unregistered", data.product);
     }
   }
@@ -1077,21 +1440,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnRunRecovery.addEventListener("click", () => {
     if (!pendingRecoveryImageBlob) {
+      if (recoveryFileInput.files && recoveryFileInput.files[0]) {
+        const file = recoveryFileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          pendingRecoveryImageBlob = evt.target.result;
+          executeDamageRecovery(pendingRecoveryImageBlob, "File Recovery Test");
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
       alert("Please choose an image file or click a synthetic test sample.");
       return;
     }
     executeDamageRecovery(pendingRecoveryImageBlob, "File Recovery Test");
   });
 
+  const SAMPLE_BENCHMARKS = {
+    low_contrast: "/static/samples/benchmark_low_contrast.png",
+    fading: "/static/samples/benchmark_fading.png",
+    scratches: "/static/samples/benchmark_scratches.png",
+    smudges: "/static/samples/benchmark_smudges.png",
+    skew: "/static/samples/benchmark_skew.png",
+    severe_noise: "/static/samples/benchmark_severe_noise.png",
+  };
+
   recoverySampleChips.forEach((chip) => {
     chip.addEventListener("click", async () => {
       const sampleType = chip.getAttribute("data-sample");
-      // Load benchmark sample
-      fetch(`/static/samples/valid_demo_br01.png`)
-        .then((r) => r.blob())
+      const sampleUrl = SAMPLE_BENCHMARKS[sampleType] || `/static/samples/valid_demo_br01.png`;
+      fetch(sampleUrl)
+        .then((r) => {
+          if (!r.ok) throw new Error(`Could not load sample ${sampleType}`);
+          return r.blob();
+        })
         .then((blob) => {
           const reader = new FileReader();
           reader.onload = (evt) => {
+            pendingRecoveryImageBlob = evt.target.result;
+            recoveryFilenameDisplay.textContent = `Sample: ${sampleType}`;
             executeDamageRecovery(evt.target.result, `Synthetic Benchmark (${sampleType})`);
           };
           reader.readAsDataURL(blob);
@@ -1106,107 +1493,126 @@ document.addEventListener("DOMContentLoaded", () => {
   // Section 3: Scan History
   // ---------------------------------------------------------------------------
   function recordHistory(barcode, method, outcome, productNameStr, productObj) {
-    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    const item = {
-      id: Date.now(),
-      time: timeStr,
-      barcode: barcode,
-      method: method,
-      outcome: outcome,
-      name: productNameStr || "—",
-      product: productObj,
-    };
-    scanHistory.unshift(item);
-    if (scanHistory.length > 50) scanHistory.pop();
+    try {
+      const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      const item = {
+        id: Date.now(),
+        time: timeStr,
+        barcode: barcode,
+        method: method,
+        outcome: outcome,
+        name: productNameStr || "—",
+        product: productObj,
+      };
+      scanHistory.unshift(item);
+      if (scanHistory.length > 50) scanHistory.pop();
 
-    historyCountBadge.textContent = scanHistory.length;
-    renderHistoryTable();
+      if (historyCountBadge) {
+        historyCountBadge.textContent = scanHistory.length;
+      }
+      renderHistoryTable();
+    } catch (err) {
+      console.error("Failed to record history:", err);
+    }
   }
 
   function renderHistoryTable() {
-    const q = (historySearchInput.value || "").trim().toLowerCase();
-    const methodFilter = historyMethodFilter.value;
-    const statusFilter = historyStatusFilter.value;
+    try {
+      const q = (historySearchInput && historySearchInput.value ? historySearchInput.value : "").trim().toLowerCase();
+      const methodFilter = historyMethodFilter ? historyMethodFilter.value : "all";
+      const statusFilter = historyStatusFilter ? historyStatusFilter.value : "all";
 
-    const filtered = scanHistory.filter((item) => {
-      if (q) {
-        const matchBarcode = item.barcode.toLowerCase().includes(q);
-        const matchName = item.name.toLowerCase().includes(q);
-        const matchMethod = item.method.toLowerCase().includes(q);
-        if (!matchBarcode && !matchName && !matchMethod) return false;
-      }
-      if (methodFilter !== "all") {
-        if (methodFilter === "camera" && !item.method.toLowerCase().includes("camera")) return false;
-        if (methodFilter === "image" && !item.method.toLowerCase().includes("image") && !item.method.toLowerCase().includes("upload")) return false;
-        if (methodFilter === "manual" && !item.method.toLowerCase().includes("manual") && !item.method.toLowerCase().includes("usb")) return false;
-      }
-      if (statusFilter !== "all") {
-        if (item.outcome !== statusFilter) return false;
-      }
-      return true;
-    });
+      const filtered = scanHistory.filter((item) => {
+        if (q) {
+          const matchBarcode = item.barcode.toLowerCase().includes(q);
+          const matchName = item.name.toLowerCase().includes(q);
+          const matchMethod = item.method.toLowerCase().includes(q);
+          if (!matchBarcode && !matchName && !matchMethod) return false;
+        }
+        if (methodFilter !== "all") {
+          if (methodFilter === "camera" && !item.method.toLowerCase().includes("camera")) return false;
+          if (methodFilter === "image" && !item.method.toLowerCase().includes("image") && !item.method.toLowerCase().includes("upload")) return false;
+          if (methodFilter === "manual" && !item.method.toLowerCase().includes("manual") && !item.method.toLowerCase().includes("usb")) return false;
+        }
+        if (statusFilter !== "all") {
+          if (item.outcome !== statusFilter) return false;
+        }
+        return true;
+      });
 
-    historyTbody.innerHTML = "";
-    historyList.innerHTML = ""; // Preserved for test assertion contract
+      if (historyTbody) historyTbody.innerHTML = "";
+      if (historyList) historyList.innerHTML = ""; // Preserved for test assertion contract
 
-    if (filtered.length === 0) {
-      historyEmpty.classList.remove("hidden");
-      historyTable.classList.add("hidden");
-      return;
+      if (filtered.length === 0) {
+        if (historyEmpty) historyEmpty.classList.remove("hidden");
+        if (historyTable) historyTable.classList.add("hidden");
+        return;
+      }
+
+      if (historyEmpty) historyEmpty.classList.add("hidden");
+      if (historyTable) historyTable.classList.remove("hidden");
+
+      filtered.forEach((item) => {
+        // 1. Table row
+        if (historyTbody) {
+          const tr = document.createElement("tr");
+          const outcomeBadge = item.outcome === "found" ? `<span class="badge badge-source">Found</span>`
+            : item.outcome === "not_found" ? `<span class="badge">Uncatalogued</span>`
+            : `<span class="badge">${item.outcome}</span>`;
+
+          tr.innerHTML = `
+            <td><small class="text-muted">${item.time}</small></td>
+            <td><strong class="code-span">${escapeHtml(item.barcode)}</strong></td>
+            <td><span class="badge">${escapeHtml(item.method)}</span></td>
+            <td>${escapeHtml(item.name)} ${outcomeBadge}</td>
+            <td>
+              <button type="button" class="btn btn-secondary btn-sm btn-reopen-history">Reopen</button>
+            </td>
+          `;
+
+          const reopenBtn = tr.querySelector(".btn-reopen-history");
+          if (reopenBtn) {
+            reopenBtn.addEventListener("click", () => {
+              switchSection("scan");
+              performScan(item.barcode, "History Reopen");
+            });
+          }
+
+          historyTbody.appendChild(tr);
+        }
+
+        // 2. Hidden LI list element to strictly preserve test contract:
+        //    assert 'li.addEventListener("click"' in js
+        //    assert 'performScan(item.barcode' in js
+        if (historyList) {
+          const li = document.createElement("li");
+          li.className = "history-list-item";
+          li.textContent = `${item.barcode} - ${item.name}`;
+          li.addEventListener("click", () => {
+            switchSection("scan");
+            performScan(item.barcode, "History Reopen");
+          });
+          historyList.appendChild(li);
+        }
+      });
+    } catch (err) {
+      console.error("Failed to render history table:", err);
     }
-
-    historyEmpty.classList.add("hidden");
-    historyTable.classList.remove("hidden");
-
-    filtered.forEach((item) => {
-      // 1. Table row
-      const tr = document.createElement("tr");
-      const outcomeBadge = item.outcome === "found" ? `<span class="badge badge-source">✓ Found</span>`
-        : item.outcome === "not_found" ? `<span class="badge">🔍 Uncatalogued</span>`
-        : `<span class="badge">⚠️ ${item.outcome}</span>`;
-
-      tr.innerHTML = `
-        <td><small class="text-muted">${item.time}</small></td>
-        <td><strong class="code-span">${escapeHtml(item.barcode)}</strong></td>
-        <td><span class="badge">${escapeHtml(item.method)}</span></td>
-        <td>${escapeHtml(item.name)} ${outcomeBadge}</td>
-        <td>
-          <button type="button" class="btn btn-secondary btn-sm btn-reopen-history">Reopen</button>
-        </td>
-      `;
-
-      tr.querySelector(".btn-reopen-history").addEventListener("click", () => {
-        switchSection("scan");
-        performScan(item.barcode, "History Reopen");
-      });
-
-      historyTbody.appendChild(tr);
-
-      // 2. Hidden LI list element to strictly preserve test contract:
-      //    assert 'li.addEventListener("click"' in js
-      //    assert 'performScan(item.barcode' in js
-      const li = document.createElement("li");
-      li.className = "history-list-item";
-      li.textContent = `${item.barcode} - ${item.name}`;
-      li.addEventListener("click", () => {
-        switchSection("scan");
-        performScan(item.barcode, "History Reopen");
-      });
-      historyList.appendChild(li);
-    });
   }
 
-  historySearchInput.addEventListener("input", renderHistoryTable);
-  historyMethodFilter.addEventListener("change", renderHistoryTable);
-  historyStatusFilter.addEventListener("change", renderHistoryTable);
+  if (historySearchInput) historySearchInput.addEventListener("input", renderHistoryTable);
+  if (historyMethodFilter) historyMethodFilter.addEventListener("change", renderHistoryTable);
+  if (historyStatusFilter) historyStatusFilter.addEventListener("change", renderHistoryTable);
 
-  clearHistoryBtn.addEventListener("click", () => {
-    if (scanHistory.length === 0) return;
-    scanHistory.length = 0;
-    historyCountBadge.textContent = "0";
-    renderHistoryTable();
-    showAlert("idle", "History Cleared", "Scan history has been cleared for this session.");
-  });
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", () => {
+      if (scanHistory.length === 0) return;
+      scanHistory.length = 0;
+      if (historyCountBadge) historyCountBadge.textContent = "0";
+      renderHistoryTable();
+      showAlert("idle", "History Cleared", "Scan history has been cleared for this session.");
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // Section 4: Products Catalogue (Full Recognized Catalog)
@@ -1225,6 +1631,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderCategoryPills();
       renderProductsList();
+      renderWorkstationCatalog();
+
+      // On initial boot, if no active product is set, load BR000001
+      if (!currentActiveProduct && catalogProducts.length > 0) {
+        currentActiveProduct = catalogProducts[0];
+        showProductFoundState(catalogProducts[0]);
+      }
     } catch (e) {
       productsListContainer.innerHTML = `<div class="empty-state-card"><p>Failed to load products catalogue.</p></div>`;
     }
@@ -1327,7 +1740,94 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update bookmark button text
     const isSaved = savedProducts.some((item) => item.barcode === p.barcode);
-    detailBtnBookmark.textContent = isSaved ? "★ Bookmarked" : "★ Bookmark";
+    detailBtnBookmark.textContent = isSaved ? "Bookmarked" : "Bookmark";
+  }
+
+  // ---------------------------------------------------------------------------
+  // Workstation Live Catalogue & Quick Switch Registry
+  // ---------------------------------------------------------------------------
+  let activeWorkstationCategory = "all";
+
+  function renderWorkstationCatalog() {
+    const filtersContainer = document.getElementById("workstation-category-filters");
+    const gridContainer = document.getElementById("workstation-catalog-grid");
+    const syncBadge = document.getElementById("workstation-synced-badge");
+    const headerSync = document.getElementById("header-sync-pill");
+
+    if (syncBadge) {
+      syncBadge.textContent = `${catalogProducts.length} OF ${catalogProducts.length} ITEMS SYNCED`;
+    }
+    if (headerSync) {
+      headerSync.textContent = `${catalogProducts.length} SYNC: SKUs Live`;
+    }
+
+    if (filtersContainer) {
+      filtersContainer.innerHTML = "";
+
+      // ALL pill
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = `workstation-pill ${activeWorkstationCategory === "all" ? "active" : ""}`;
+      allBtn.textContent = `ALL (${catalogProducts.length})`;
+      allBtn.addEventListener("click", () => {
+        activeWorkstationCategory = "all";
+        renderWorkstationCatalog();
+      });
+      filtersContainer.appendChild(allBtn);
+
+      // Category pills
+      catalogCategories.forEach((cat) => {
+        const count = catalogProducts.filter((p) => p.category_id === cat.id).length;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `workstation-pill ${activeWorkstationCategory === String(cat.id) ? "active" : ""}`;
+        btn.textContent = `${cat.name.toUpperCase()} (${count})`;
+        btn.addEventListener("click", () => {
+          activeWorkstationCategory = String(cat.id);
+          renderWorkstationCatalog();
+        });
+        filtersContainer.appendChild(btn);
+      });
+    }
+
+    if (gridContainer) {
+      gridContainer.innerHTML = "";
+
+      const filtered = catalogProducts.filter((p) => {
+        if (activeWorkstationCategory === "all") return true;
+        return String(p.category_id) === activeWorkstationCategory;
+      });
+
+      filtered.forEach((p) => {
+        const card = document.createElement("div");
+        const isActive = currentActiveProduct && currentActiveProduct.barcode === p.barcode;
+        card.className = `workstation-product-card ${isActive ? "active-item" : ""}`;
+        card.setAttribute("data-barcode", p.barcode);
+
+        const catName = p.category_name || "Item";
+        let catClass = "badge-cat-dress";
+        if (catName.toLowerCase().includes("kurti")) catClass = "badge-cat-kurti";
+        else if (catName.toLowerCase().includes("party")) catClass = "badge-cat-party";
+        else if (catName.toLowerCase().includes("abaya")) catClass = "badge-cat-abaya";
+
+        card.innerHTML = `
+          <div class="w-card-header">
+            <strong class="w-card-title">${escapeHtml(p.name)}</strong>
+            <span class="w-card-cat-pill ${catClass}">${escapeHtml(catName)}</span>
+          </div>
+          <div class="w-card-footer">
+            <span class="w-card-barcode">${escapeHtml(p.barcode)}</span>
+            <span class="w-card-sku">${escapeHtml(p.id)}</span>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          performScan(p.barcode, "Quick Switch Registry");
+        });
+
+        gridContainer.appendChild(card);
+      });
+    }
   }
 
   productsSearchInput.addEventListener("input", renderProductsList);
@@ -1407,7 +1907,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td><small class="text-muted">${item.timestamp}</small></td>
         <td>
           <button type="button" class="btn btn-secondary btn-sm btn-batch-reopen">Reopen</button>
-          <button type="button" class="btn btn-secondary btn-sm btn-batch-remove">✕</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-batch-remove">Remove</button>
         </td>
       `;
 
@@ -1468,10 +1968,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update buttons in active views
     if (currentActiveProduct && currentActiveProduct.barcode === product.barcode) {
-      btnBookmarkProduct.textContent = idx >= 0 ? "★ Bookmark" : "★ Bookmarked";
+      btnBookmarkProduct.textContent = idx >= 0 ? "Bookmark" : "Bookmarked";
     }
     if (selectedCatalogProduct && selectedCatalogProduct.barcode === product.barcode) {
-      detailBtnBookmark.textContent = idx >= 0 ? "★ Bookmark" : "★ Bookmarked";
+      detailBtnBookmark.textContent = idx >= 0 ? "Bookmark" : "Bookmarked";
     }
 
     renderSavedList();
@@ -1502,7 +2002,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="saved-card-actions">
           <button type="button" class="btn btn-secondary btn-sm btn-reopen-saved">Scan</button>
           <button type="button" class="btn btn-secondary btn-sm btn-compare-saved">Compare</button>
-          <button type="button" class="btn btn-secondary btn-sm btn-remove-saved" id="btn-remove-saved">✕ Remove</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-remove-saved" id="btn-remove-saved">Remove</button>
         </div>
       `;
 

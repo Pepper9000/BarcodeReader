@@ -67,6 +67,20 @@ def test_ui_elements_for_new_features_present():
     # Mobile camera snapshot recovery
     assert 'id="camera-snap-recover-btn"' in html
 
+    # Settings modal & trigger button
+    assert 'id="btn-open-settings"' in html
+    assert 'id="modal-settings"' in html
+
+    # Recovery inside Scan
+    assert 'id="tab-recovery-btn"' in html
+    assert 'id="panel-recovery"' in html
+
+    # Unknown barcode handling elements
+    assert 'id="unknown-barcode-code"' in html
+    assert 'id="unknown-product-name"' in html
+    assert 'id="btn-save-to-catalogue"' in html
+    assert 'id="unknown-product-error"' in html
+
 
 def test_js_safety_and_feature_contracts():
     """Verify app.js implements the safety rules and feature contracts."""
@@ -118,4 +132,93 @@ def test_missing_product_submission_flow():
     # Confirm it does NOT appear in public catalog
     products = client.get("/api/products").json()
     assert all(p["barcode"] != test_code for p in products)
+    assert len(products) == 16
+
+
+def test_navigation_and_no_emojis():
+    """Verify navigation is reduced to 3 main tabs and no emojis are present."""
+    import re
+    from app.catalogue import default_catalogue
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    js = APP_JS.read_text(encoding="utf-8")
+
+    # Main navigation should only have Scan, Catalogue, Labels as visible tabs
+    nav_match = re.search(r'<nav class="app-nav"[^>]*>(.*?)</nav>', html, re.DOTALL)
+    assert nav_match is not None
+    nav_content = nav_match.group(1)
+    assert 'id="btn-nav-scan"' in nav_content
+    assert 'id="btn-nav-products"' in nav_content
+    assert 'id="btn-nav-labels"' in nav_content
+    # Non-hidden nav tabs should be exactly 3
+    visible_tabs = re.findall(r'<button type="button" class="nav-tab[^"]*"', nav_content)
+    assert len(visible_tabs) == 3
+
+    # Check for absence of emojis
+    emoji_pattern = re.compile(
+        r'[\U00010000-\U0010ffff]|[\u2600-\u27bf]|[\u2300-\u23ff]|[\u2b50-\u2b55]|[\u203c-\u2049]|[\u25aa-\u25fe]'
+    )
+    assert len(emoji_pattern.findall(html)) == 0
+    assert len(emoji_pattern.findall(js)) == 0
+
+
+def test_save_unknown_barcode_to_catalogue():
+    """Verify unknown barcode save flow: rejection of invalid inputs and successful persistence."""
+    from app.catalogue import default_catalogue
+
+    test_barcode = "8901234567890"
+
+    try:
+        # 1. Initially barcode is not in catalogue -> scan returns 404
+        scan_res = client.post("/api/scan", json={"barcode": test_barcode})
+        assert scan_res.status_code == 404
+
+        # 2. Reject blank product name with 400
+        blank_name_res = client.post(
+            "/api/products",
+            json={"barcode": test_barcode, "name": "   "},
+        )
+        assert blank_name_res.status_code == 400
+        assert "blank" in blank_name_res.json()["detail"].lower() or "empty" in blank_name_res.json()["detail"].lower()
+
+        # 3. Reject blank barcode with 400
+        blank_code_res = client.post(
+            "/api/products",
+            json={"barcode": "   ", "name": "Valid Name"},
+        )
+        assert blank_code_res.status_code == 400
+
+        # 4. Reject duplicate barcode with 409
+        dup_res = client.post(
+            "/api/products",
+            json={"barcode": "BR000001", "name": "Duplicate Item"},
+        )
+        assert dup_res.status_code == 409
+        assert "already exists" in dup_res.json()["detail"].lower()
+
+        # 5. Successfully add new unknown barcode with valid name
+        create_res = client.post(
+            "/api/products",
+            json={"barcode": test_barcode, "name": "Organic Almond Milk"},
+        )
+        assert create_res.status_code == 201
+        created_data = create_res.json()
+        assert created_data["barcode"] == test_barcode
+        assert created_data["name"] == "Organic Almond Milk"
+        assert created_data["id"].startswith("PROD-")
+        assert created_data["category_id"] == 1
+
+        # 6. Subsequent scan of the same barcode now finds it in catalogue!
+        subsequent_scan = client.post("/api/scan", json={"barcode": test_barcode})
+        assert subsequent_scan.status_code == 200
+        scan_product = subsequent_scan.json()
+        assert scan_product["barcode"] == test_barcode
+        assert scan_product["name"] == "Organic Almond Milk"
+
+    finally:
+        # Teardown: remove test barcode to keep 16 catalog items invariant
+        default_catalogue.remove_product(test_barcode)
+
+    # Confirm restored to 16 items
+    products = client.get("/api/products").json()
     assert len(products) == 16
